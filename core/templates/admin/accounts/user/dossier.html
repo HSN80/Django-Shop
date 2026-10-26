@@ -1,0 +1,243 @@
+{% extends "admin/base_site.html" %}
+{% load compress %}
+
+{% block extrastyle %}{{ block.super }}
+
+{% compress css inline %}
+<style>
+  .dossier .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .dossier h1 { margin: 0 0 4px; }
+  .dossier .muted { color: var(--body-quiet-color); font-size: 12px; margin-top: 2px; }
+  .dossier .badge { display: inline-block; padding: 2px 8px; margin-inline-start: 6px; border-radius: 10px; font-size: 12px; font-weight: 400; border: 1px solid var(--border-color); color: var(--body-quiet-color); }
+  .dossier .badge.ok { color: #2ecc71; border-color: #2ecc71; }
+  .dossier .badge.bad { color: var(--error-fg); border-color: var(--error-fg); }
+  .dossier .badge.warn { color: #e67e22; border-color: #e67e22; }
+  .dossier .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--darkened-bg); }
+  .dossier .actions input[type=text] { flex: 1; min-width: 200px; }
+  .dossier .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .dossier .card { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--darkened-bg); }
+  .dossier .card .label { font-size: 12px; color: var(--body-quiet-color); }
+  .dossier .card .value { font-size: 18px; font-weight: 700; margin-top: 2px; }
+  .dossier .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .dossier .tabs button { padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--body-bg); color: var(--body-fg); cursor: pointer; }
+  .dossier .tabs button.active { background: var(--primary); color: var(--button-fg, #fff); border-color: var(--primary); }
+  .dossier .tab-panel { display: none; }
+  .dossier .tab-panel.active { display: block; }
+  .dossier table { width: 100%; }
+  .dossier .lines td { background: var(--darkened-bg); color: var(--body-quiet-color); font-size: 12px; }
+</style>
+{% endcompress %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">Accounts</a>
+  &rsaquo; <a href="{% url 'admin:accounts_user_changelist' %}">Users</a>
+  &rsaquo; <a href="{% url 'admin:accounts_user_change' original.pk %}">{{ original }}</a>
+  &rsaquo; پرونده
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dossier" dir="rtl">
+
+  <div class="head">
+    <div>
+      <h1>
+        {{ original.username }}
+        <span class="badge {% if original.is_active %}ok{% else %}bad{% endif %}">{% if original.is_active %}فعال{% else %}مسدود{% endif %}</span>
+        <span class="badge {% if original.is_verified %}ok{% else %}warn{% endif %}">{% if original.is_verified %}تأیید شده{% else %}تأییدنشده{% endif %}</span>
+        {% if original.is_staff %}<span class="badge">ادمین</span>{% endif %}
+      </h1>
+      <div class="muted">
+        {{ original.phone }} · {{ original.email }}
+        {% if dossier.profile %}· {{ dossier.profile.first_name }} {{ dossier.profile.last_name }}{% endif %}
+      </div>
+      <div class="muted">
+        عضویت: {{ original.created_date|date:"Y-m-d H:i" }}
+        · آخرین ورود: {{ original.last_login|date:"Y-m-d H:i"|default:"—" }}
+      </div>
+    </div>
+    <a href="{% url 'admin:accounts_user_change' original.pk %}">ویرایش اطلاعات</a>
+  </div>
+
+  {% if can_change %}
+  <form method="post" class="actions">
+    {% csrf_token %}
+    <input type="text" name="reason" maxlength="60" placeholder="دلیل (اختیاری، در تاریخچه ثبت می‌شود)">
+    {% if original.is_active %}
+      <button type="submit" name="action" value="ban" onclick="return confirm('این حساب مسدود شود؟');">مسدود کردن</button>
+    {% else %}
+      <button type="submit" name="action" value="unban">بازکردن حساب</button>
+    {% endif %}
+    {% if original.is_verified %}
+      <button type="submit" name="action" value="unverify">لغو تأیید</button>
+    {% else %}
+      <button type="submit" name="action" value="verify">تأیید کاربر</button>
+    {% endif %}
+  </form>
+  {% endif %}
+
+  <div class="cards">
+    {% for c in dossier.cards %}
+    <div class="card"><div class="label">{{ c.label }}</div><div class="value">{{ c.value }}</div></div>
+    {% endfor %}
+  </div>
+
+  <div class="tabs">
+    <button type="button" data-tab="orders" class="active">سفارش‌ها و فاکتورها ({{ dossier.orders|length }})</button>
+    <button type="button" data-tab="carts">سبدها ({{ dossier.carts|length }})</button>
+    <button type="button" data-tab="tickets">تیکت‌ها ({{ dossier.tickets|length }})</button>
+    <button type="button" data-tab="comments">نظرات</button>
+    <button type="button" data-tab="favorites">علاقه‌مندی‌ها ({{ dossier.favorites|length }})</button>
+    <button type="button" data-tab="media">رسانه‌ها ({{ dossier.media|length }})</button>
+    <button type="button" data-tab="history">تاریخچه</button>
+  </div>
+
+  <section id="tab-orders" class="tab-panel active">
+    <table>
+      <thead><tr><th>سفارش</th><th>تاریخ</th><th>وضعیت</th><th>مبلغ</th><th>کد رهگیری</th></tr></thead>
+      <tbody>
+      {% for o in dossier.orders %}
+        <tr>
+          <td><a href="{% url 'admin:orders_order_change' o.pk %}">#{{ o.pk }}</a></td>
+          <td>{{ o.created_date|date:"Y-m-d H:i" }}</td>
+          <td>{{ o.get_status_display }}</td>
+          <td>{{ o.price|floatformat:"0g" }}</td>
+          <td>{{ o.tracking_code|default:"—" }}</td>
+        </tr>
+        {% if o.lines %}
+        <tr class="lines"><td colspan="5">
+          {% for l in o.lines %}{{ l.product.title }} × {{ l.quantity }} ({{ l.purchase_price|floatformat:"0g" }}){% if not forloop.last %}، {% endif %}{% endfor %}
+        </td></tr>
+        {% endif %}
+      {% empty %}
+        <tr><td colspan="5" class="muted">سفارشی ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-carts" class="tab-panel">
+    <table>
+      <thead><tr><th>سبد</th><th>وضعیت</th><th>تعداد اقلام</th><th>جمع</th><th>آخرین تغییر</th></tr></thead>
+      <tbody>
+      {% for c in dossier.carts %}
+        <tr>
+          <td><a href="{% url 'admin:carts_cart_change' c.pk %}">#{{ c.pk }}</a></td>
+          <td>{{ c.get_status_display }}</td>
+          <td>{{ c.qty_total }}</td>
+          <td>{{ c.money_total|floatformat:"0g" }}</td>
+          <td>{{ c.updated_date|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="muted">سبدی ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-tickets" class="tab-panel">
+    <table>
+      <thead><tr><th>موضوع</th><th>بخش</th><th>وضعیت</th><th>پیام‌ها</th><th>تاریخ</th></tr></thead>
+      <tbody>
+      {% for t in dossier.tickets %}
+        <tr>
+          <td><a href="{% url 'admin:tickets_ticket_change' t.pk %}">{{ t.subject }}</a>{% if t.is_archived %} (بایگانی){% endif %}</td>
+          <td>{{ t.get_department_display }}</td>
+          <td>{{ t.get_status_display }}</td>
+          <td>{{ t.messages_count }}</td>
+          <td>{{ t.created_date|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="muted">تیکتی ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-comments" class="tab-panel">
+    <table>
+      <thead><tr><th>محصول</th><th>متن</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
+      <tbody>
+      {% for c in dossier.comments %}
+        <tr>
+          <td>{{ c.product.title|default:"—" }}</td>
+          <td><a href="{% url 'admin:products_comment_change' c.pk %}">{{ c.body|truncatechars:60 }}</a></td>
+          <td>{{ c.get_status_display }}</td>
+          <td>{{ c.created_date|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">نظری ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-favorites" class="tab-panel">
+    <table>
+      <thead><tr><th>محصول</th><th>تاریخ</th></tr></thead>
+      <tbody>
+      {% for f in dossier.favorites %}
+        <tr>
+          <td><a href="{% url 'admin:products_catalog_change' f.product_id_id %}">{{ f.product_id.title }}</a></td>
+          <td>{{ f.created_date|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">علاقه‌مندی‌ای ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-media" class="tab-panel">
+    <table>
+      <thead><tr><th>محصول</th><th>استوری</th><th>هایلایت</th><th>تاریخ</th></tr></thead>
+      <tbody>
+      {% for m in dossier.media %}
+        <tr>
+          <td><a href="{% url 'admin:multimedia_media_change' m.pk %}">{{ m.product.title|default:"—" }}</a></td>
+          <td>{% if m.is_story %}بله{% else %}خیر{% endif %}</td>
+          <td>{% if m.is_highlighted %}بله{% else %}خیر{% endif %}</td>
+          <td>{{ m.created_date|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">رسانه‌ای ندارد.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tab-history" class="tab-panel">
+    <table>
+      <thead><tr><th>زمان</th><th>رویداد</th><th>توسط</th><th>دلیل</th></tr></thead>
+      <tbody>
+      {% for e in dossier.events %}
+        <tr>
+          <td>{{ e.date|date:"Y-m-d H:i" }}</td>
+          <td>{{ e.text }}</td>
+          <td>{{ e.by|default:"—" }}</td>
+          <td>{{ e.reason|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">رویدادی ثبت نشده.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% compress js inline %}
+  <script>
+    document.querySelectorAll('.dossier .tabs button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.dossier .tabs button, .dossier .tab-panel').forEach(function (e) {
+          e.classList.remove('active');
+        });
+        b.classList.add('active');
+        document.getElementById('tab-' + b.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+{% endcompress %}
+</div>
+{% endblock %}

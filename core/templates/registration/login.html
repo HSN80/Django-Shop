@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Login</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a>Home</a></li>
+          <li class="current">Login</li>
+        </ol>
+      </nav>
+    </div>
+  </div><!-- End Page Title -->
+  <!-- Login Section -->
+  <section class="login section" id="login">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+          <div class="auth-card">
+            <div class="row g-0">
+              <!-- Side Panel -->
+              <div class="col-lg-5 d-none d-lg-block">
+                <div class="side-panel">
+                  <div class="side-panel-content">
+                    <div class="brand-icon">
+                      <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3>Secure Access Portal</h3>
+                    <p>Manage your account with confidence. Your data is protected with enterprise-grade encryption.</p>
+                    <ul class="feature-list">
+                      <li>
+                        <i class="bi bi-check-circle"></i>
+                        <span>Two-factor authentication</span>
+                      </li>
+                      <li>
+                        <i class="bi bi-check-circle"></i>
+                        <span>End-to-end encryption</span>
+                      </li>
+                      <li>
+                        <i class="bi bi-check-circle"></i>
+                        <span>24/7 account monitoring</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div><!-- End Side Panel -->
+              <!-- Form Panel -->
+              <div class="col-lg-7">
+                <div class="form-panel">
+                  <!-- Tab Navigation -->
+                  <div class="auth-tabs">
+                    <span>Sign In</span>
+                  </div>
+                  <!-- Login Form -->
+                  <div class="auth-form login-form active">
+                    {% if form.errors %}
+                      <p>{{form.errors}}</p>
+                    {% endif %}
+                    <p class="form-subtitle">Enter your credentials to access your account</p>
+                    <form class="auth-form-content" method="post">
+                      {% csrf_token %}
+                      <div class="field-group">
+                        <label>Your Username</label>
+                        <input autocomplete="username" class="form-control" name="username" placeholder="your emial or phone number or username" required=""
+                          type="text" />
+                        <span class="field-hint">We'll never share your information</span>
+                      </div>
+                      <div class="field-group">
+                        <div class="label-row">
+                          <label>Password</label>
+                          <a class="forgot-link" href="{% url 'accounts:Password_reset' %}">Forgot password?</a>
+                        </div>
+                        <div class="input-wrapper">
+                          <input autocomplete="current-password" class="form-control pass-input" name="password" placeholder="Enter your password"
+                            required="" type="password" />
+                          <span class="password-toggle toggle-btn">
+                            <i class="bi bi-eye-slash"></i>
+                          </span>
+                        </div>
+                      </div>
+                      <button class="btn-primary-auth" type="submit">
+                        Sign In
+                      </button>
+                    </form>
+                  </div><!-- End Login Form -->
+                </div>
+              </div><!-- End Form Panel -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section><!-- /Login Section -->
+</main>
+{% endblock %}

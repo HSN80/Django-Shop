@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Register</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a>Home</a></li>
+          <li class="current">Register</li>
+        </ol>
+      </nav>
+    </div>
+  </div><!-- End Page Title -->
+  <!-- Register Section -->
+  <section class="register section" id="register">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+          <div class="register-card">
+            <div class="card-heading text-center">
+              <span class="status-badge"><i class="bi bi-sparkle"></i> Create Your Account</span>
+              <h3>Start Shopping Smarter</h3>
+              <p>Unlock personalized deals, faster checkout, and member-only perks.</p>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="field-group">
+                    <label for="registerName">User Name</label>
+                    <input autocomplete="username" class="form-control" name="username"
+                      placeholder="Enter your username" required="" type="text" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label for="registerEmail">Email Address</label>
+                    <input autocomplete="email" class="form-control" id="registerEmail" name="email"
+                      placeholder="you@example.com" required="" type="email" />
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="field-group">
+                    <label for="registerEmail">Phone Number</label>
+                    <input autocomplete="tel" class="form-control" name="phone" placeholder="912345678" required=""
+                      type="tel" />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label for="registerPassword">Password</label>
+                    <input autocomplete="new-password" class="form-control pass-input" minlength="8" name="password1"
+                      placeholder="Min. 8 characters" id="registerPassword" required="" type="password" />
+                    <span class="password-toggle toggle-btn">
+                      <i class="bi bi-eye-slash"></i>
+                    </span>
+                    <span class="field-hint">Must be at least 8 characters</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label for="registerConfirm">Confirm Password</label>
+                    <input autocomplete="new-password" class="form-control pass-input" minlength="8"
+                      name="password2" placeholder="Re-enter password" id="registerConfirm" required="" type="password" />
+                    <span class="password-toggle toggle-btn" >
+                      <i class="bi bi-eye-slash" ></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <button class="btn btn-register w-100" type="submit">Create Account</button>
+                </div>
+                <div class="col-12">
+                  <p class="login-prompt text-center">Already have an account? <a href="{% url 'accounts:Login' %}">Sign
+                      in</a></p>
+                </div>
+              </div>
+            </form>
+          </div><!-- End Register Card -->
+        </div>
+      </div>
+    </div>
+  </section><!-- /Register Section -->
+</main>
+{% endblock %}

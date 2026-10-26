@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  {% if payment.status == 'paid' %}
+    <h2>پرداخت با موفقیت انجام شد</h2>
+    <p>سفارش #{{ payment.order.pk }} ثبت شد.</p>
+    <p>شماره مرجع: {{ payment.ref_number|default:"—" }} · کد پیگیری درگاه: {{ payment.track_id }}</p>
+  {% elif payment.status == 'pending' %}
+    <h2>پرداخت هنوز تأیید نشده است</h2>
+    <p>اگر مبلغی از حساب شما کسر شده، دوباره بررسی کنید یا با پشتیبانی تماس بگیرید.</p>
+    <a class="btn btn-outline-primary" href="{% url 'orders:verify' %}?trackId={{ payment.track_id }}">بررسی دوباره</a>
+  {% else %}
+    <h2>پرداخت ناموفق بود</h2>
+    <p>مبلغی از حساب شما کسر نشده یا به‌صورت خودکار برگردانده می‌شود.</p>
+    {% if payment.order.status == 'awaiting' %}
+      <a class="btn btn-primary" href="{% url 'accounts:Profile' %}#account-tab-wallets">سفارش شما لغو شد</a>
+    {% endif %}
+  {% endif %}
+  <p class="mt-4"><a href="{% url 'accounts:Profile' %}">بازگشت به پروفایل</a></p>
+</div>
+{% endblock %}

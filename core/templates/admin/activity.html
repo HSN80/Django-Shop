@@ -1,0 +1,80 @@
+{% extends "admin/base_site.html" %}
+{% load compress %}
+
+{% block extrastyle %}{{ block.super }}
+{% compress css inline %}
+<style>
+  .activity .filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--darkened-bg); }
+  .activity .filters label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--body-quiet-color); }
+  .activity table { width: 100%; }
+  .activity .muted { color: var(--body-quiet-color); }
+  .activity .kind { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; border: 1px solid var(--border-color); }
+  .activity .kind.k-plus { color: #2ecc71; border-color: #2ecc71; }
+  .activity .kind.k-minus { color: var(--error-fg); border-color: var(--error-fg); }
+  .activity .kind.k-tilde { color: #3498db; border-color: #3498db; }
+  .activity .chg { font-size: 12px; }
+</style>
+{% endcompress %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a> &rsaquo; فعالیت‌ها
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="activity" dir="rtl">
+
+  <form method="get" class="filters">
+    <label>بخش
+      <select name="section">
+        {% for k, l in section_options %}<option value="{{ k }}"{% if k == filters.section %} selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>عملیات
+      <select name="action">
+        {% for k, l in action_options %}<option value="{{ k }}"{% if k == filters.action %} selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>انجام‌دهنده
+      <select name="by">
+        {% for k, l in by_options %}<option value="{{ k }}"{% if k == filters.by %} selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>از تاریخ <input type="date" name="since" value="{{ filters.since }}"></label>
+    <label>تا تاریخ <input type="date" name="until" value="{{ filters.until }}"></label>
+    <button type="submit">اعمال فیلتر</button>
+    <a href="{% url 'admin:activity' %}">پاک کردن</a>
+  </form>
+
+  <table>
+    <thead>
+      <tr><th>زمان</th><th>بخش</th><th>عملیات</th><th>مورد</th><th>تغییرات</th><th>توسط</th><th>دلیل</th></tr>
+    </thead>
+    <tbody>
+    {% for e in events %}
+      <tr>
+        <td>{{ e.date|date:"Y-m-d H:i" }}</td>
+        <td>{{ e.section }}</td>
+        <td><span class="kind {% if e.kind_key == '+' %}k-plus{% elif e.kind_key == '-' %}k-minus{% else %}k-tilde{% endif %}">{{ e.kind }}</span></td>
+        <td>{% if e.url %}<a href="{{ e.url }}">{{ e.object }}</a>{% else %}{{ e.object }}{% endif %}</td>
+        <td>
+          {% for label, old, new in e.changes %}
+          <div class="chg">{{ label }}: <bdi>{{ old }}</bdi> ← <bdi>{{ new }}</bdi></div>
+          {% endfor %}
+        </td>
+        <td>{{ e.by }}</td>
+        <td>{{ e.reason|default:"—" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="muted">رویدادی با این فیلترها پیدا نشد.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% if more_url %}
+  <p><a href="{{ more_url }}">نمایش رویدادهای بیشتر</a></p>
+  {% endif %}
+</div>
+{% endblock %}

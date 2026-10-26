@@ -1,0 +1,824 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_tags %}
+{% load humanize %}
+{% load compress %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Account</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a>Home</a></li>
+          <li class="current">Account</li>
+        </ol>
+      </nav>
+    </div>
+  </div><!-- End Page Title -->
+  <!-- Account Section -->
+  <section class="account section" id="account">
+    <!-- Section Title -->
+    <div class="container section-title">
+      <h2>Account</h2>
+      <p>Welcome Back {{profile.first_name}}</p>
+    </div><!-- End Section Title -->
+    <div class="container">
+      <div class="row g-4">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3">
+          <div class="sidebar-panel">
+            <div class="profile-block">
+              <div class="profile-avatar">
+                <img alt="Profile" loading="lazy"
+                  src="{% if profile.image %}{{object.image.url}}{% else %}{% static 'assets/img/person/person-f-3.webp' %}{% endif %}" />
+                <span class="verified-icon"><i class="bi bi-patch-check-fill"></i></span>
+              </div>
+              <h3 class="profile-name">{{object.first_name}}</h3>
+              <div class="profile-stats">
+                <div class="stat-block"><span class="stat-num">{{profile.order.all|length}}</span><span
+                    class="stat-label">Orders</span></div>
+                <div class="stat-block"><span class="stat-num">{{profile.favorites.all|length}}</span><span
+                    class="stat-label">Saved</span></div>
+                <div class="stat-block"><span class="stat-num">{{profile.comments.all|length}}</span><span
+                    class="stat-label">Reviews</span></div>
+              </div>
+            </div>
+            <nav class="sidebar-nav">
+              <ul class="nav flex-column" role="tablist">
+                <li class="nav-item" role="presentation"><a aria-selected="true" class="nav-link active"
+                    data-bs-target="#account-tab-orders" data-bs-toggle="tab" role="tab"><i
+                      class="bi bi-bag"></i><span>Orders</span></a></li>
+                <li class="nav-item" role="presentation"><a aria-selected="false" class="nav-link"
+                    data-bs-target="#account-tab-wishlist" data-bs-toggle="tab" role="tab" tabindex="-1"><i
+                      class="bi bi-bookmark-heart"></i><span>Favorites</span></a></li>
+                <li class="nav-item" role="presentation"><a aria-selected="false" class="nav-link"
+                    data-bs-target="#account-tab-wallet" data-bs-toggle="tab" role="tab" tabindex="-1"><i
+                      class="bi bi-basket3"></i><span>Cart</span></a></li>
+                <li class="nav-item" role="presentation"><a aria-selected="false" class="nav-link"
+                    data-bs-target="#account-tab-reviews" data-bs-toggle="tab" role="tab" tabindex="-1"><i
+                      class="bi bi-chat-square-text"></i><span>Feedback</span></a></li>
+                <li class="nav-item" role="presentation"><a aria-selected="false" class="nav-link"
+                    data-bs-target="#account-tab-settings" data-bs-toggle="tab" role="tab" tabindex="-1"><i
+                      class="bi bi-sliders"></i><span>Preferences</span></a></li>
+                <li class="nav-item" role="presentation">
+                  <a aria-selected="false" class="nav-link" data-bs-target="#account-tab-support" data-bs-toggle="tab"
+                    role="tab" tabindex="-1">
+                    <i class="bi bi-life-preserver"></i><span>Support</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+            <div class="sidebar-footer">
+
+              <form id="logout-form" action="{% url 'accounts:Logout' %}" method="post" style="display: none;">
+                {% csrf_token %}
+                {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.Get.next }}">
+                {% endif %}
+              </form>
+              <a class="sidebar-action logout" href="#"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="bi bi-power"></i>SignOut</a>
+            </div>
+          </div>
+        </div><!-- End Sidebar -->
+        <!-- Main Content Area -->
+        <div class="col-lg-9">
+          <div class="tab-content content-area">
+            <!-- Orders Tab -->
+            <div class="tab-pane fade show active" id="account-tab-orders" role="tabpanel">
+              <div class="content-header">
+                <h2>Purchase History</h2>
+                <div class="header-actions">
+                  <form method="GET" style="margin: 0; padding: 0;">
+                    <div class="search-field">
+                      <i class="bi bi-search"></i>
+                      <input name="q" value="{{ search_query }}" placeholder="Find an order (ID or Name)..."
+                        type="text" />
+                      {% if current_status != 'all' %}
+                      <input type="hidden" name="status" value="{{ current_status }}">
+                      {% endif %}
+                    </div>
+                  </form>
+                  <div class="dropdown">
+                    <button class="filter-btn" data-bs-toggle="dropdown">
+                      <i class="bi bi-filter"></i>
+                      <span>
+                        {% if current_status == 'checkout' %}Processing
+                        {% elif current_status == 'sent' %}Shipped
+                        {% elif current_status == 'arrived' %}Delivered
+                        {% elif current_status == 'canceled' %}Cancelled
+                        {% else %}Filter{% endif %}
+                      </span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item {% if current_status == 'all' %}active{% endif %}"
+                          href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}">All Orders</a></li>
+                      <li><a class="dropdown-item {% if current_status == 'checkout' %}active{% endif %}"
+                          href="?status=checkout{% if search_query %}&q={{ search_query }}{% endif %}">Processing</a>
+                      </li>
+                      <li><a class="dropdown-item {% if current_status == 'sent' %}active{% endif %}"
+                          href="?status=sent{% if search_query %}&q={{ search_query }}{% endif %}">Shipped</a></li>
+                      <li><a class="dropdown-item {% if current_status == 'arrived' %}active{% endif %}"
+                          href="?status=arrived{% if search_query %}&q={{ search_query }}{% endif %}">Delivered</a></li>
+                      <li><a class="dropdown-item {% if current_status == 'canceled' %}active{% endif %}"
+                          href="?status=canceled{% if search_query %}&q={{ search_query }}{% endif %}">Cancelled</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="orders-grid">
+                <!-- Order  -->
+                {% for item in orders_page_obj %}
+                <div class="order-card state-processing">
+                  <div class="order-card-top">
+                    <div class="order-meta">
+                      <span class="order-id">#ORD-{{item.id}}</span>
+                      <span class="order-date">{{item.created_date}}</span>
+                    </div>
+                    <span class="status-tag processing">{{item.status}}</span>
+                  </div>
+                  <div class="order-card-body">
+                    {% for item in order.items.all %}
+                    <div class="order-images">
+                      <img alt="Product" loading="lazy" src="" />
+                    </div>
+                    <div class="order-summary">
+                      <span class="item-count">{{item.count}} items</span>
+                      <span class="order-amount">${{item.price}}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <div class="order-card-footer">
+                    <button class="btn-ghost" data-bs-target="#account-track-{{ item.id }}" data-bs-toggle="collapse"
+                      type="button"><i class="bi bi-geo-alt"></i> Track</button>
+                    <button class="btn-secondary" data-bs-target="#account-det-{{ item.id }}" data-bs-toggle="collapse"
+                      type="button">View Details</button>
+                  </div>
+                  <div class="collapse tracker-panel" id="account-track-{{ item.id }}">
+                    {% if item.status == 'canceled' %}
+                    <div class="alert alert-danger text-center mb-0">
+                      This order is Cancelled.
+                    </div>
+                    {% else %}
+                    <div class="step-tracker">
+                      <!-- Step 1: Confirmed -->
+                      <div
+                        class="step {% if item.status in 'checkout,sent,arrived' %}done{% elif item.status == 'awaiting' %}current{% endif %}">
+                        <div class="step-icon">
+                          {% if item.status in 'checkout,sent,arrived' %}
+                          <i class="bi bi-check-lg"></i>
+                          {% else %}
+                          <i class="bi bi-credit-card"></i>
+                          {% endif %}
+                        </div>
+                        <span class="step-name">Confirmed</span>
+                      </div>
+                      <div
+                        class="step {% if item.status in 'sent,arrived' %}done{% elif item.status == 'checkout' %}current{% endif %}">
+                        <div class="step-icon">
+                          {% if item.status in 'sent,arrived' %}
+                          <i class="bi bi-check-lg"></i>
+                          {% else %}
+                          <i class="bi bi-gear"></i>
+                          {% endif %}
+                        </div>
+                        <span class="step-name">Processing</span>
+                      </div>
+
+                      <!-- Step 3: In Transit -->
+                      <div
+                        class="step {% if item.status == 'arrived' %}done{% elif item.status == 'sent' %}current{% endif %}">
+                        <div class="step-icon">
+                          {% if item.status == 'arrived' %}
+                          <i class="bi bi-check-lg"></i>
+                          {% else %}
+                          <i class="bi bi-truck"></i>
+                          {% endif %}
+                        </div>
+                        <span class="step-name">In Transit</span>
+                      </div>
+
+                      <!-- Step 4: Delivered -->
+                      <div class="step {% if item.status == 'arrived' %}done{% endif %}">
+                        <div class="step-icon">
+                          {% if item.status == 'arrived' %}
+                          <i class="bi bi-check-lg"></i>
+                          {% else %}
+                          <i class="bi bi-house-door"></i>
+                          {% endif %}
+                        </div>
+                        <span class="step-name">Delivered</span>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="collapse details-panel" id="account-det-{{ item.id }}">
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="info-group">
+                          <h5>Order Information</h5>
+                          <div class="info-row"><span class="info-label">Postal Code</span><span class="info-value">
+                              {{ item.postal_code }}</span>
+                          </div>
+                        </div>
+                        <div class="info-group">
+                          <h5>Delivery Specifications</h5>
+                          <p>Name : {{ item.first_name }} <br> Last Name : {{ item.last_name }} </p>
+                        </div>
+                        <div class="info-group">
+                          <h5>Delivery Address</h5>
+                          <p>{{ item.address }}</p>
+                          <p class="text-muted-custom">{{ item.profile.user.phone }}</p>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="info-group">
+                          <h5>Items ({{ item.cart.items_count }})</h5>
+                          {% for obj in item.cart.cart_items.all %}
+                          <div class="line-item"><img alt="Product" loading="lazy"
+                              src="{{ obj.product.images.first.image.url }}" />
+                            <div class="line-item-detail">
+                              <h6>{{ obj.product.snippet }}</h6><span>SKU: {{ obj.product.slug }} · Qty: {{ obj.quantity }}</span>
+                            </div>
+                              <span class="line-item-price">{{ obj.price|intcomma }}
+                              تومان
+                              </span>
+                          </div>
+                          {% endfor %}
+                        </div>
+                        <div class="info-group">
+                          <h5>Price Summary</h5>
+                          {% for obj in item.cart.cart_items.all %}
+                          <div class="total-row"><span>Subtotal</span><span>{{ obj.price|intcomma }}<img
+                                src="{% static 'assets/img/toman.svg' %}" alt="tomman"
+                                style="width: 15px; margin-left: 5px;"> x{{ obj.quantity }}</span></div>
+                          {% endfor %}
+                          <div class="total-row final"><span>Total</span><span>{{ item.price|intcomma }}<img
+                                src="{% static 'assets/img/toman.svg' %}" alt="tomman"
+                                style="width: 15px; margin-left: 5px;"></span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- End Order -->
+                {% empty %}
+                <div class="col-12 text-center py-5 mt-5 epmty-status-container">
+                  <img src="{% static 'assets/img/bag.svg' %}" alt="no-comments"
+                    style="width: 120px; opacity: 0.5; margin-bottom: 20px;">
+                  <h4 class="text-secondary fw-bold">No Order Registred!</h4>
+                </div>
+                {% endfor %}
+              </div>
+              {% if orders_page_obj.has_other_pages %}
+              <div class="pagination-bar">
+
+                {% if orders_page_obj.has_previous %}
+                <button class="pg-btn"
+                  onclick="window.location.href='?page={{ orders_page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}'"
+                  type="button">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                {% else %}
+                <button class="pg-btn" disabled="" type="button">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                {% endif %}
+
+                <div class="pg-numbers">
+                  {% for i in page_range %}
+                  {% if i == paginator.ELLIPSIS or i == '…' %}
+                  <span>…</span>
+                  {% elif i == orders_page_obj.number %}
+                  <button class="active" type="button">{{ i }}</button>
+                  {% else %}
+                  <button type="button"
+                    onclick="window.location.href='?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}'">{{ i }}</button>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+
+                {% if orders_page_obj.has_next %}
+                <button class="pg-btn"
+                  onclick="window.location.href='?page={{ orders_page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}'"
+                  type="button">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+                {% else %}
+                <button class="pg-btn" disabled="" type="button">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+                {% endif %}
+
+              </div>
+              {% endif %}
+            </div>
+            <!-- Favorites Tab -->
+            <div class="tab-pane fade" id="account-tab-wishlist" role="tabpanel">
+              <div class="content-header">
+                <h2>Saved Favorites</h2>
+              </div>
+              <div class="row g-3">
+                {% for item in profile.favorites.all %}
+                <div class="col-md-6 col-xl-4">
+                  <div class="wishlist-card">
+                    <div class="wishlist-img"><img alt="Product" class="img-fluid" loading="lazy"
+                        src="{{ item.product_id.images.first.image.url }}" />
+                      {% if item.product_id.discount_campaign %}
+                      <span class="sale-badge">-{{ item.product_id.discount_campaign.percent }}%</span>
+                      {% endif %}
+                      {% if not item.product_id.stock %}
+                      <span class="soldout-badge">Sold Out</span>
+                      {% endif %}
+                    </div>
+                    <div class="wishlist-info">
+                      <h4 class="wishlist-title">{{ item.product_id.title }}</h4>
+                      <div class="price-group">
+                        {% if item.product_id.discount_campaign %}
+                        <span class="current-price">{{ item.product_id.discount|intcomma }}
+                          <img
+                            src="{% static 'assets/img/toman.svg' %}" alt="tomman"
+                            style="width: 15px; margin-left: 5px;">
+                        </span>
+                        <span class="old-price">{{ item.product_id.price|intcomma }}</span>
+                        {% else %}
+                        <span class="current-price">{{ item.product_id.price|intcomma }}<img
+                            src="{% static 'assets/img/toman.svg' %}" alt="tomman"
+                            style="width: 15px; margin-left: 5px;"></span>
+                        {% endif %}
+                      </div>
+                      <div class="wishlist-actions">
+                        {% if item.product_id.stock %}
+                        <a href="{{ item.product_id.get_absolute_url }}" class="btn-primary btn-sm">
+                          View Product
+                        </a>
+                        <form action="{% url 'userfav:Userfav_delete' item.id %}" method="POST"
+                          style="display: contents;">
+                          {% csrf_token %}
+                          <button aria-label="Remove" class="btn-remove" type="submit"><i
+                              class="bi bi-x-lg"></i></button>
+                        </form>
+                        {% else %}
+                        <button class="btn-primary btn-sm" type="button" disabled>Add to Cart</button>
+                        <form action="{% url 'userfav:Userfav_delete' item.id %}" method="POST"
+                          style="display: contents;">
+                          {% csrf_token %}
+                          <button aria-label="Remove" class="btn-remove" type="submit"><i
+                              class="bi bi-x-lg"></i></button>
+                        </form>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5 mt-5 epmty-status-container">
+                  <img src="{% static 'assets/img/no-favorites.svg' %}" alt="no-favorites"
+                    style="width: 120px; opacity: 0.5; margin-bottom: 20px;">
+                  <h4 class="text-secondary fw-bold">No Favorites Yet!</h4>
+                  <p class="text-muted mb-4">You haven`t saved anything! start exploring NOW.</p>
+                  <a href="{% url 'products:Catalog_list' %}" class="btn btn-primary px-4 py-2"
+                    style="border-radius: 8px;">
+                    Browse Products
+                  </a>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <!-- Payments Tab -->
+            <div class="tab-pane fade" id="account-tab-wallet" role="tabpanel">
+              <div class="content-header">
+                <h2>Your Shopping Cart</h2>
+              </div>
+              <div class="container">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <!-- Cart Summary -->
+                    <div class="orders-grid">
+                      {% for cart in profile.carts.all %}
+                      <div class="order-card state-processing">
+                        <div class="order-card-top">
+                          <div class="order-meta">
+                            <span class="order-id">#Cart-{{ cart.id }}</span>
+                            <span class="order-date">{{ cart.created_date|naturaltime }}</span>
+                          </div>
+                          <span class="status-tag processing">
+                            {% if cart.status == 'checkout' %}Paid{% elif cart.status == 'active' %}Active{% elif cart.status == 'updating' %}Updating{% elif cart.status == 'abandoned' %}Canceled{% elif cart.status == 'empty' %}Empty{% endif %}
+                          </span>
+                        </div>
+                        <div class="order-card-body">
+                          <div class="order-summary">
+                            <span class="item-count">{{ cart.items_count }} items</span>
+                            <span class="order-amount">{{ cart.total_price|intcomma }} <img
+                                src="{% static 'assets/img/toman.svg' %}" alt="toman" style="width: 15px;"></span>
+                          </div>
+                        </div>
+                        <div class="order-card-footer">
+                          {% if cart.status == 'active' or cart.status == 'updating' %}
+                          <a class="btn btn-danger" href="{% url 'carts:Cart_cancel' pk=cart.pk %}">Cancel this Cart</a>
+                          {% endif %}
+                          <button class="btn-secondary" data-bs-target="#cart-det-{{ cart.id }}"
+                            data-bs-toggle="collapse" type="button">
+                            View Cart Details
+                          </button>
+                        </div>
+                        <div class="collapse details-panel" id="cart-det-{{ cart.id }}">
+                          <div class="col-lg-12 mt-3">
+                            <!-- Cart Summary -->
+                            <div class="card cart-summary border-0 shadow-none">
+                              <div class="card-body p-0">
+                                <h5 class="card-title mb-4">Order Summary</h5>
+                                <div class="d-flex justify-content-between mb-3">
+                                  <span style="font-weight: bold;">Subtotal</span>
+                                </div>
+                                {% for item in cart.cart_items.all %}
+                                <div class="d-flex justify-content-between mb-3">
+                                  <span>product name: </span>
+                                  <span>{{ item.product.title }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                  <span>quantity: </span>
+                                  <span>{{ item.quantity }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                  <span>price :</span>
+                                  <span>{{ item.price|intcomma }}<img src="{% static 'assets/img/toman.svg' %}"
+                                      alt="tomman" style="width: 15px; margin-left: 5px;"></span>
+                                </div>
+                                <hr>
+                                {% endfor %}
+                                <div class="d-flex justify-content-between mb-3">
+                                  <span style="font-weight: bold;">total items :</span>
+                                  <span>{{ cart.items_count }}</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-4">
+                                  <strong>Total</strong>
+                                  <strong>{{ cart.total_price|intcomma }}<img src="{% static 'assets/img/toman.svg' %}"
+                                      alt="tomman" style="width: 15px; margin-left: 5px;"></strong>
+                                </div>
+                                <div class="mt-4">
+                                  {% if cart.status == 'active' %}
+                                  <a class="btn btn-primary w-100" href="{% url 'orders:review' %}">Proceed to Checkout</a>
+                                  {% elif cart.status == 'updating' %}
+                                  <a class="btn btn-primary w-100" href="{% url 'orders:review' %}">Retry Checkout</a>
+                                  {% elif cart.status == 'checkout' %}
+                                  <div class="alert alert-success text-center mb-0"
+                                    style="font-weight: bold; border-radius: 8px;">
+                                    this cart is procceded to checkout. you can check this in your order tab.
+                                  </div>
+                                  {% elif cart.status == 'abandoned' %}
+                                  <div class="alert alert-danger text-center mb-0"
+                                    style="font-weight: bold; border-radius: 8px;">
+                                    this cart has been canceled.
+                                  </div>
+                                  {% endif %}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {% empty %}
+                      <div class="col-12 text-center py-5 mt-5 epmty-status-container">
+                        <img src="{% static 'assets/img/basket3-empty.svg' %}" alt="no-comments"
+                          style="width: 120px; opacity: 0.5; margin-bottom: 20px;">
+                        <h4 class="text-secondary fw-bold">Nothing Here</h4>
+                        <p class="text-muted mb-4">You don`t have any active cart.</p>
+                        <a href="{% url 'products:Catalog_list' %}" class="btn btn-primary px-4 py-2"
+                          style="border-radius: 8px;">
+                          Browse Products
+                        </a>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Feedback Tab -->
+            <div class="tab-pane fade" id="account-tab-reviews" role="tabpanel">
+              <div class="row g-3">
+                <div class="content-header">
+                  <h2>My Feedback</h2>
+                </div>
+                <div class="reviews-list">
+                  {% for item in profile.comments.all %}
+                  <div class="review-card">
+                    <div class="review-card-left">
+                      <img alt="Product" class="review-img" loading="lazy" src="{{ item.product.images.first.image.url }}" />
+                    </div>
+                    <div class="review-card-right">
+                      <div class="review-header">
+                        <h4>{{ item.product.title }}</h4>
+                        <span class="review-date">{{ item.created_date|naturaltime }}</span>
+                      </div>
+                      <p class="review-text">{{ item.body }}</p>
+                      <div class="review-actions">
+                        <form action="{% url 'products:Comment_delete' item.id %}" method="post"
+                          style="display: contents;">
+                          {% csrf_token %}
+                          <button class="action-link danger" type="submit"><i class="bi bi-trash3"></i> Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  {% empty %}
+                  <div class="col-12 text-center py-5 mt-5 epmty-status-container">
+                    <img src="{% static 'assets/img/no-comments.svg' %}" alt="no-comments"
+                      style="width: 120px; opacity: 0.5; margin-bottom: 20px;">
+                    <h4 class="text-secondary fw-bold">No Comments Yet!</h4>
+                    <p class="text-muted mb-4">You haven`t posted any comments.</p>
+                    <a href="{% url 'products:Catalog_list' %}" class="btn btn-primary px-4 py-2"
+                      style="border-radius: 8px;">
+                      Browse Products
+                    </a>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <!-- Preferences Tab -->
+            <div class="tab-pane fade" id="account-tab-settings" role="tabpanel">
+              <div class="content-header">
+                <h2>Account Preferences</h2>
+              </div>
+              <div class="settings-list">
+                <div class="settings-section">
+                  <h3><i class="bi bi-person-circle"></i> Personal Details</h3>
+                  <form method="post" action="{% url 'accounts:Profile' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                      <div class="col-md-6"><label class="form-label">First Name</label><input class="form-control"
+                          name="first_name" required type="text" value="{{ profile.first_name }}" />
+                      </div>
+                      <div class="col-md-6"><label class="form-label">Last Name</label><input class="form-control"
+                          name="last_name" required type="text" value="{{ profile.last_name }}" />
+                      </div>
+                      <div class="col-md-6"><label class="form-label">Username</label><input class="form-control"
+                          name="username" required type="text" value="{{ user.username }}" />
+                      </div>
+                      <div class="col-md-6"><label class="form-label">About You</label><input class="form-control"
+                          name="description" required type="text" value="{{ profile.description }}" />
+                      </div>
+                      <div class="d-flex align-items-center mb-4">
+                        <div class="me-3">
+                          <img
+                            src="{% if profile.image %}{{ profile.image.url }}{% else %}https://via.placeholder.com/72{% endif %}"
+                            alt="Profile Image" class="rounded-circle border"
+                            style="width: 72px; height: 72px; object-fit: cover;" id="profilePreview">
+                        </div>
+                        <div>
+                          <label for="profile_image" class="btn btn-sm btn-outline-primary mb-1"
+                            style="cursor: pointer;">
+                            <i class="bi bi-camera me-1"></i> Change Avatar
+                          </label>
+                          <input type="file" id="profile_image" name="image" class="d-none"
+                            accept="image/jpeg, image/png, image/jpg" onchange="previewImage(event)">
+                          <div class="form-text" style="font-size: 0.8rem;">JPG, JPEG or PNG. Max size of 1MB</div>
+                        </div>
+                      </div>
+                      <hr>
+                      <h3><i class="bi bi-telephone"></i>Contact Info</h3>
+                      <div class="col-md-6"><label class="form-label">Email Address</label><input class="form-control"
+                          name="email" required="" type="email" value="{{ user.email }}" /></div>
+                      <div class="col-md-6"><label class="form-label">Phone Number</label><input class="form-control"
+                          name="phone" type="tel" value="{{ user.phone }}" />
+                      </div>
+                      <hr>
+                      <h3><i class="bi bi-house"></i>Address</h3>
+                      <div class="form-section" id="ship-address">
+                        <div class="section-fields">
+                          <div class="row g-3">
+                            <div class="col-md-6 field-group">
+                              <label for="StateSelect">State</label>
+                              <select class="form-select" id="StateSelect" name="state_select" required>
+                                <option value="">Select a state</option>
+                              </select>
+                            </div>
+                            <div class="col-md-6 field-group">
+                              <label for="CitySelect">City</label>
+                              <select class="form-select" id="CitySelect" name="city_select" required>
+                                <option value="">Select a city</option>
+                              </select>
+                            </div>
+                            <div class="col-sm-8 field-group">
+                              <label for="c-street">Address</label>
+                              <input class="form-control" id="c-street" name="address" placeholder="your address"
+                                required type="text" value="{{ profile.address }}" />
+                            </div>
+                            <div class="col-sm-4 field-group">
+                              <label for="c-zip">postal Code</label>
+                              <input class="form-control" id="c-zip" name="postal_code" placeholder="postal code"
+                                required type="text" value="{{ profile.postal_code }}" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-footer">
+                        <button class="btn-primary" type="submit">Save Changes</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <!-- <div class="settings-section">
+                  <h3><i class="bi bi-bell"></i> Notification Settings</h3>
+                  <div class="switch-list">
+                    <div class="switch-row">
+                      <div class="switch-info">
+                        <h4>Order Notifications</h4>
+                        <p>Stay updated on your order progress</p>
+                      </div>
+                      <div class="form-check form-switch"><input checked="" class="form-check-input" id="notifOrders"
+                          type="checkbox" /></div>
+                    </div>
+                    <div class="switch-row">
+                      <div class="switch-info">
+                        <h4>Deals &amp; Offers</h4>
+                        <p>Get notified about special deals and promotions</p>
+                      </div>
+                      <div class="form-check form-switch"><input class="form-check-input" id="notifDeals"
+                          type="checkbox" /></div>
+                    </div>
+                    <div class="switch-row">
+                      <div class="switch-info">
+                        <h4>Weekly Digest</h4>
+                        <p>Receive a curated weekly email summary</p>
+                      </div>
+                      <div class="form-check form-switch"><input checked="" class="form-check-input" id="notifDigest"
+                          type="checkbox" /></div>
+                    </div>
+                  </div>
+                </div> -->
+                <div class="settings-section">
+                  <h3><i class="bi bi-shield-lock"></i> Security</h3>
+                  <form action="{% url 'accounts:Password_change' %}" method="post">
+                    <div class="row g-3">
+                      {% csrf_token %}
+                      <div class="col-12"><label class="form-label" for="curPwd">Current Password</label><input
+                          class="form-control" id="curPwd" name="old_password" required="" type="password" />
+                      </div>
+                      <div class="col-md-6"><label class="form-label" for="newPwd">New Password</label><input
+                          class="form-control" id="newPwd" name="new_password1" required="" type="password" /></div>
+                      <div class="col-md-6"><label class="form-label" for="confPwd">Confirm Password</label><input
+                          class="form-control" id="confPwd" name="new_password2" required="" type="password" />
+                      </div>
+                      <div class="form-footer">
+                        <button class="btn-primary" type="submit">Update Password</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="settings-section danger-zone">
+                  <h3><i class="bi bi-exclamation-triangle"></i> Danger Zone</h3>
+                  <div class="danger-content">
+                    <form action="{% url 'accounts:Delete' %}" method="post">
+                      {% csrf_token %}
+                      <p>Permanently remove your account and all associated data. This action cannot be reversed.</p>
+                      <button type="submit" class="btn-danger">Delete My Account</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Support Tab -->
+            <div class="tab-pane fade" id="account-tab-support" role="tabpanel">
+              <div class="content-header">
+                <h2>Support Tickets</h2>
+                <div class="header-actions">
+                  <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal" type="button">
+                    <i class="bi bi-plus-lg"></i> New Ticket
+                  </button>
+                </div>
+              </div>
+              <div class="orders-grid">
+                {% for ticket in profile.ticket.all %}
+                <div class="order-card state-processing">
+                  <div class="order-card-top">
+                    <div class="order-meta">
+                      <span class="order-id">#TCK-{{ ticket.id }}</span>
+                      <span class="order-date">{{ ticket.created_date|naturaltime }}</span>
+                    </div>
+                    <span class="status-tag processing">
+                      {{ ticket.get_status_display }}
+                    </span>
+                  </div>
+                  <div class="order-card-body">
+                    <div class="order-summary">
+                      <span class="order-amount">Department: {{ ticket.get_department_display }}</span>
+                      <span class="order-amount">Subject: {{ ticket.subject }}</span>
+                    </div>
+                  </div>
+                  <div class="order-card-footer">
+                    <button class="btn-secondary" data-bs-target="#ticket-det-{{ ticket.id }}" data-bs-toggle="collapse"
+                      type="button">
+                      <i class="bi bi-chat-dots"></i> View Conversation
+                    </button>
+                  </div>
+                  <div class="collapse details-panel" id="ticket-det-{{ ticket.id }}">
+                    <div class="info-group">
+                      <h5>Original Message</h5>
+                      <p>{{ ticket.content }}</p>
+                    </div>
+                    {% if ticket.message.all %}
+                    <div class="info-group">
+                      <h5>Conversation</h5>
+                      {% for msg in ticket.message.all %}
+                      <div class="line-item">
+                        <div class="line-item-detail">
+                          <h6>{{ msg.sender.user }}</h6>
+                          <span>{{ msg.message }}</span>
+                        </div>
+                        <span class="text-muted-custom" style="white-space: nowrap;">{{ msg.created_date|naturaltime }}</span>
+                      </div>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if ticket.status != 'closed' %}
+                    <form action="{% url 'tickets:Message_create' ticket.id %}" method="post" class="mt-3">
+                      {% csrf_token %}
+                      <div class="row g-2">
+                        <div class="col-9">
+                          <input class="form-control" name="message" placeholder="Type your reply..." required
+                            type="text" />
+                        </div>
+                        <div class="col-3">
+                          <button class="btn-primary w-100" style="text-align: center;" type="submit">Send</button>
+                        </div>
+                      </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-secondary text-center mb-0 mt-3">This ticket is closed.</div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5 mt-5 epmty-status-container">
+                  <img alt="no-tickets" src="{% static 'assets/img/envelop-ban.svg' %}"
+                    style="width: 200px; opacity: 0.5; margin-bottom: 20px;" />
+                  <h4 class="text-secondary fw-bold">No Tickets Yet!</h4>
+                  <p class="text-muted mb-4">You haven`t opened any support tickets.</p>
+                  <button class="btn btn-primary px-4 py-2" data-bs-toggle="modal" data-bs-target="#newTicketModal"
+                    style="border-radius: 8px;" type="button">
+                    Open a Ticket
+                  </button>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div><!-- End Main Content -->
+        </div>
+      </div>
+  </section><!-- /Account Section -->
+  <!-- New Ticket Modal -->
+  <div class="modal fade" id="newTicketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="{% url 'tickets:Ticket_create' %}" method="post">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="{{ ticket_form.subject.id_for_label }}">Subject</label>
+                {{ ticket_form.subject }}
+                {% if ticket_form.subject.errors %}
+                <div class="text-danger small mt-1">{{ ticket_form.subject.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="{{ ticket_form.department.id_for_label }}">Department</label>
+                {{ ticket_form.department }}
+                {% if ticket_form.department.errors %}
+                <div class="text-danger small mt-1">{{ ticket_form.department.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="{{ ticket_form.content.id_for_label }}">Describe your issue</label>
+                {{ ticket_form.content }}
+                {% if ticket_form.content.errors %}
+                <div class="text-danger small mt-1">{{ ticket_form.content.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+            <button class="btn-primary" type="submit">Submit Ticket</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% compress js inline%}
+  <script>
+    const jsonurl = "{% static 'assets/js/iran-provinces-and-cities.json' %}"
+  </script>
+  <script src="{% static 'assets/js/province-select.js' %}"></script>
+  {% endcompress %}
+</main>
+{% endblock %}

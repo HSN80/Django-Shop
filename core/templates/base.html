@@ -1,0 +1,139 @@
+{% load static %}
+{% load cart_tags %}
+{% load humanize %}
+{% load compress %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Django Shop</title>
+    <meta content="" name="description" />
+    <meta content="" name="keywords" />
+    <meta content="noindex, nofollow" name="robots" />
+    <!-- Favicons -->
+    <link href="{% static 'assets/img/favicon.png' %}" rel="icon" />
+    <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon" />
+    <!-- Vendor CSS Files -->
+    {% compress css %}
+    <link href="{% static 'vendors/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'vendors/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet" />
+    <link href="{% static 'vendors/swiper/swiper-bundle.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'vendors/drift-zoom/drift-basic.css' %}" rel="stylesheet" />
+    <link href="{% static 'vendors/glightbox/css/glightbox.min.css' %}" rel="stylesheet" />
+    <!-- Main CSS File -->
+    <link href="{% static 'assets/css/main.css' %}" rel="stylesheet" />
+    {% endcompress %}
+    <!-- =======================================================
+  * Template Name: ShopWise
+  * Template URL: https://bootstrapmade.com/shopwise-bootstrap-ecommerce-template/
+  * Updated: Apr 08 2026 with Bootstrap v5.3.8
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body class="index-page">
+    <header class="header position-relative" id="header">
+        <div class="main-bar">
+            <div class="container-fluid container-xl">
+                <div class="row align-items-center gy-2">
+                    <!-- Logo -->
+                    <div class="col-auto">
+                        <a class="logo d-flex align-items-center" href="{% url 'products:Catalog_list' %}">
+                            <i class="bi bi-cart2"></i>
+                            <h1 class="sitename">Django Shop</h1>
+                        </a>
+                    </div>
+                    <!-- Search -->
+                    <div class="col d-none d-lg-block">
+                        <form class="search-bar">
+                        </form>
+                    </div>
+                    {% if request.resolver_match.app_name != 'accounts' and request.resolver_match.app_name != 'orders' %}
+                    {% load product_tags %}
+                    {% headers_context %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Navigation -->
+        <div class="nav-strip">
+            <div class="container-fluid container-xl position-relative">
+                <nav class="navmenu" id="navmenu">
+                    <ul>
+                        <li><a class="active" href="{% url 'products:Catalog_list' %}">Home</a></li>
+                        <li><a href="{% url 'products:Category_list' %}">Category</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <main class="main">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                {% endfor %}
+        </ul>
+        {% endif %}
+        {% block content %}
+
+        {% endblock %}
+        <footer class="footer" id="footer">
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="copyright text-center">
+                        <p>© <span>Copyright</span> <strong class="sitename">ShopWise</strong>. All Rights Reserved.</p>
+                    </div>
+                    <div class="credits">
+                        <!-- All the links in the footer should remain intact. -->
+                        <!-- You can delete the links only if you've purchased the pro version. -->
+                        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+                        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
+                        Designed by <a href="https://bootstrapmade.com/demo/shopwise/">BootstrapMade</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Scroll Top -->
+        <a class="scroll-top d-flex align-items-center justify-content-center active" href="#" id="scroll-top"><i
+                class="bi bi-arrow-up-short"></i></a>
+        <!-- Vendor JS Files -->
+        {% compress js %}
+        <script src="{% static 'vendors/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'vendors/php-email-form/validate.js' %}"></script>
+        <script src="{% static 'vendors/swiper/swiper-bundle.min.js' %}"></script>
+        <script src="{% static 'vendors/drift-zoom/Drift.min.js' %}"></script>
+        <script src="{% static 'vendors/glightbox/js/glightbox.min.js' %}"></script>
+        <script src="{% static 'vendors/purecounter/purecounter_vanilla.js' %}"></script>
+        <script src="{% static 'assets/js/password-toggle.js' %}"></script>
+        <!-- Main JS File -->
+        <script src="{% static 'assets/js/main.js' %}"></script>
+        {% endcompress %}
+
+{% compress js inline %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var hash = window.location.hash; 
+    if (!hash) return;
+
+    var trigger = document.querySelector('.sidebar-nav [data-bs-target="' + hash + '"]');
+    if (trigger) {
+      bootstrap.Tab.getOrCreateInstance(trigger).show();
+      trigger.scrollIntoView({ block: 'nearest' });
+    }
+  });
+  document.querySelectorAll('.sidebar-nav [data-bs-toggle="tab"]').forEach(function (tab) {
+    tab.addEventListener('shown.bs.tab', function (e) {
+      var target = e.target.getAttribute('data-bs-target');
+      history.replaceState(null, '', target);
+    });
+  });
+</script>
+{% endcompress %}
+</body>
+
+</html>

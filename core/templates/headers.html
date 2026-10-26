@@ -1,0 +1,136 @@
+{% load static %}
+{% load product_tags %}
+{% load humanize %}
+
+<!-- Actions -->
+<div class="col-auto ms-auto ms-lg-0">
+    <div class="action-group d-flex align-items-center">
+        <!-- Account -->
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+            <button aria-label="Account" class="action-btn" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i>
+            </button>
+            <div class="dropdown-menu account-flyout">
+                <div class="flyout-header">
+                    <h6>Welcome Back</h6>
+                    <p>{{ profile.first_name }}</p>
+                </div>
+                <div class="flyout-links">
+                    <a href="{% url 'accounts:Profile' %}">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="{% url 'accounts:Profile' %}#account-tab-orders">
+                        <i class="bi bi-receipt"></i>
+                        <span>Order History</span>
+                    </a>
+                    <a href="{% url 'accounts:Profile' %}#account-tab-wishlist">
+                        <i class="bi bi-bookmark-heart"></i>
+                        <span>Favorites</span>
+                    </a>
+                    <a href="{% url 'accounts:Profile' %}#account-tab-wallet">
+                        <i class="bi bi-basket3"></i>
+                        <span>Cart</span>
+                    </a>
+                    <a href="{% url 'accounts:Profile' %}#account-tab-support">
+                        <i class="bi bi-life-preserver"></i>
+                        <span>Support Center</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="dropdown">
+            <button aria-label="Account" class="action-btn" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i>
+            </button>
+            <div class="dropdown-menu account-flyout">
+                <div class="flyout-header">
+                    <h6>Welcome Back</h6>
+                    <p>Log in for a personalized experience</p>
+                </div>
+                <div class="flyout-actions">
+                    <a class="btn btn-primary-action" href="{% url 'accounts:Login' %}">Log In</a>
+                    <a class="btn btn-outline-action" href="{% url 'accounts:Register' %}">Register</a>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Wishlist -->
+            {% if user.is_authenticated %}
+            <a aria-label="Wishlist" class="action-btn d-none d-md-flex" href="{% url 'accounts:Profile' %}#account-tab-wishlist">
+                <i class="bi bi-heart"></i>
+                {% if favorites %}
+                <span class="badge-count">{{ favorites }}</span>
+                {% endif %}
+            </a>
+            {% endif %}
+            <!-- Cart -->
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button aria-label="Cart" class="action-btn" data-bs-toggle="dropdown">
+                    <i class="bi bi-bag"></i>
+                    {% if cart.items_count %}
+                    <span class="badge-count">{{ cart.items_count }}</span>
+                    {% endif %}
+                </button>
+                <div class="dropdown-menu cart-flyout">
+                    {% if cart %}
+                    <div class="flyout-top">
+                        <h6>Your Bag</h6>
+                        <span class="items-label">{{ cart.items_count }} items</span>
+                    </div>
+                    <div class="flyout-items">
+                        <!-- Cart Item -->
+                        {% for item in cart.cart_items.all %}
+                        <div class="flyout-item">
+                            <div class="flyout-item-thumb">
+                                {% with first_image=item.product.images.all.0 %}
+                                    <img alt="Product" class="img-fluid" src="{{ first_image.image.url }}" />
+                                {% endwith %}
+                            </div>
+                            <div class="flyout-item-details">
+                                <h6>
+                                    <a href="{{ item.product.get_absolute_url }}">
+                                        {{ item.product.title }}
+                                    </a>
+                                </h6>
+                                <div class="item-bottom">
+                                    <span class="item-price">{{item.product.final_price | intcomma}}<img src="{% static 'assets/img/toman.svg' %}" alt="toman"></span>
+                                    <span class="item-qty">x{{item.quantity}}</span>
+                                </div>
+                            </div>
+                            <form action="{% url 'carts:Cart_item_delete' item.id %}" method="post"
+                                style="display: inline;">
+                                {% csrf_token %}
+                                <button aria-label="Remove item" class="item-dismiss" type="submit">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- End Cart Item -->
+                        {% endfor %}
+                    </div>
+                    <div class="flyout-bottom">
+                        <div class="subtotal-row">
+                            <span>Subtotal</span>
+                            <span class="subtotal-value">
+                                <object data="{% static 'assets/img/toman.svg' %}"></object>
+                                {{ cart.total_price | intcomma}}
+                            </span>
+                        </div>
+                        <a class="btn btn-proceed" href="{% url 'accounts:Profile' %}#account-tab-wallet">Proceed to Checkout</a>
+                    </div>
+                    {% else %}
+                    <div class="flyout-top">
+                        <h6>Your Bag</h6>
+                        <span class="items-label">0 items</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Mobile Navigation Toggle -->
+            <i class="mobile-nav-toggle d-xl-none bi bi-list me-0"></i>
+            {% endif %}
+        </div>
+    </div>

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_tags %}
+{% load humanize %}
+{% load compress %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Checkout</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a>Home</a></li>
+          <li class="current">Checkout</li>
+        </ol>
+      </nav>
+    </div>
+  </div><!-- End Page Title -->
+  <!-- Checkout Section -->
+  <section class="checkout section" id="checkout">
+    <div class="container">
+      <div class="row g-4">
+        <!-- Checkout Form - Left -->
+        <div class="col-lg-12 order-lg-1 order-2">
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            {{ form.errors }}
+          </div>
+          {% endif %}
+          <div class="checkout-card">
+            <form class="checkout-form" method="post">
+              {% csrf_token %}
+
+              <!-- Contact Information -->
+              <div class="form-section" id="contact-info">
+                <div class="section-label">
+                  <span class="label-icon"><i class="bi bi-person"></i></span>
+                  <div>
+                    <h3>Contact Information</h3>
+                    <p>Provide your personal details for this order.</p>
+                  </div>
+                </div>
+                <div class="section-fields">
+                  {% get_active_cart user as cart%}
+                  <div class="row g-3">
+                    <div class="col-sm-6 field-group">
+                      <label for="c-fname">First Name</label>
+                      <input class="form-control" id="c-fname" name="first_name" placeholder="Jane" required type="text"
+                        value="{{ cart.profile.first_name }}" />
+                    </div>
+                    <div class="col-sm-6 field-group">
+                      <label for="c-lname">Last Name</label>
+                      <input class="form-control" id="c-lname" name="last_name" placeholder="Doe" required type="text"
+                        value="{{ cart.profile.last_name }}" />
+                    </div>
+                    <div class="col-sm-6 field-group">
+                      <label for="c-email">Email</label>
+                      <input class="form-control" id="c-email" name="email" placeholder="jane@example.com" type="email"
+                        value="{{ cart.profile.user.email }}" />
+                    </div>
+                    <div class="col-sm-6 field-group">
+                      <label for="c-phone">Phone</label>
+                      <input class="form-control" id="c-phone" name="phone" placeholder="+98 912 345 6789" required
+                        type="tel" value="{{ cart.profile.user.phone }}" />
+                    </div>
+                  </div>
+                </div>
+              </div><!-- End Contact Information -->
+
+              <hr class="section-divider" />
+
+              <!-- Shipping Address -->
+              <div class="form-section" id="ship-address">
+                <div class="section-label">
+                  <span class="label-icon"><i class="bi bi-geo-alt"></i></span>
+                  <div>
+                    <h3>Shipping Address</h3>
+                    <p>Where should we deliver your order?</p>
+                  </div>
+                </div>
+                <div class="section-fields">
+                  <div class="row g-3">
+                    <div class="col-md-6 field-group">
+                      <label for="StateSelect">State</label>
+                      <select class="form-select" id="StateSelect" name="state_select" required>
+                        <option value="">Select a state</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6 field-group">
+                      <label for="CitySelect">City</label>
+                      <select class="form-select" id="CitySelect" name="city_select" required>
+                        <option value="">Select a city</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-8 field-group">
+                      <label for="c-street">Address</label>
+                      <input class="form-control" id="c-street" name="address" placeholder="your address" required
+                        type="text" value="{{ cart.profile.address }}" />
+                    </div>
+                    <div class="col-sm-4 field-group">
+                      <label for="c-zip">postal Code</label>
+                      <input class="form-control" id="c-zip" name="postal_code" placeholder="postal code" required type="text"
+                        value="{{ cart.profile.postal_code }}" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex flex-wrap gap-4 mt-3">
+                  <div class="form-check">
+                    <input class="form-check-input" id="save-addr" name="save-address" type="checkbox" />
+                    <label class="form-check-label" for="save-addr">Save this address</label>
+                  </div>
+                </div>
+              </div><!-- End Shipping Address -->
+
+              <hr class="section-divider" />
+
+              <!-- Confirm Order -->
+              <div class="form-section" id="order-confirm">
+                <div class="confirm-area">
+                  <div class="form-check agree-check">
+                    <input class="form-check-input" id="accept-terms" name="terms" required type="checkbox" />
+                    <label class="form-check-label" for="accept-terms">
+                      I agree to the <a data-bs-target="#termsModal" data-bs-toggle="modal" href="#">Terms of
+                        Service</a> and <a data-bs-target="#privacyModal" data-bs-toggle="modal" href="#">Privacy
+                        Policy</a>
+                    </label>
+                  </div>
+                  <div class="order-success d-none">Your order has been placed successfully! We appreciate your
+                    business.</div>
+                  <button class="btn place-order-btn" type="submit">
+                    <i class="bi bi-lock-fill me-2"></i>Place Order — {{ cart.total_price | intcomma }} <img
+                      src="{% static 'assets/img/toman.svg' %}">
+                  </button>
+                </div>
+              </div><!-- End Confirm Order -->
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Terms Modal -->
+    <div aria-hidden="true" aria-labelledby="termsModalLabel" class="modal fade" id="termsModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="termsModalLabel">Terms of Service</h5>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+          </div>
+          <div class="modal-body">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu
+              sed erat molestie vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in nulla
+              enim. Phasellus molestie magna non est bibendum non venenatis nisl tempor.</p>
+            <p>Suspendisse in orci enim. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus
+              rhoncus ut eleifend nibh porttitor. Ut in nulla enim. Phasellus molestie magna non est bibendum non
+              venenatis nisl tempor.</p>
+            <p>Suspendisse in orci enim. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus
+              rhoncus ut eleifend nibh porttitor. Ut in nulla enim. Phasellus molestie magna non est bibendum non
+              venenatis nisl tempor.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Privacy Modal -->
+    <div aria-hidden="true" aria-labelledby="privacyModalLabel" class="modal fade" id="privacyModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+          </div>
+          <div class="modal-body">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu
+              sed erat molestie vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in nulla
+              enim.</p>
+            <p>Suspendisse in orci enim. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus
+              rhoncus ut eleifend nibh porttitor. Ut in nulla enim. Phasellus molestie magna non est bibendum non
+              venenatis nisl tempor.</p>
+            <p>Suspendisse in orci enim. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus
+              rhoncus ut eleifend nibh porttitor. Ut in nulla enim. Phasellus molestie magna non est bibendum non
+              venenatis nisl tempor.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section><!-- /Checkout Section -->
+  {% compress js %}
+  <script>
+    const jsonurl = "{% static 'assets/js/iran-provinces-and-cities.json' %}"
+  </script>
+  <script src="{% static 'assets/js/province-select.js' %}"></script>
+  {% endcompress %}
+</main>
+{% endblock %}

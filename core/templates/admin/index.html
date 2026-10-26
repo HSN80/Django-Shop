@@ -1,0 +1,182 @@
+{% extends "admin/index.html" %}
+{% load static %}
+{% load compress %}
+
+{% block extrastyle %}{{ block.super }}
+{% compress css inline %}
+<style>
+  .shop-dash { margin-bottom: 24px; }
+  .shop-dash .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .shop-dash .card { display: block; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--darkened-bg); color: var(--body-fg); text-decoration: none; }
+  .shop-dash .card:hover { border-color: var(--link-fg); }
+  .shop-dash .card .label, .shop-dash .card .sub { font-size: 12px; color: var(--body-quiet-color); }
+  .shop-dash .card .value { font-size: 22px; font-weight: 700; margin: 4px 0; }
+  .shop-dash .card.warn { border-color: var(--error-fg); }
+  .shop-dash .card.warn .value { color: var(--error-fg); }
+  .shop-dash .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .shop-dash .grid2.wide { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 900px) { .shop-dash .grid2.wide { grid-template-columns: 1fr; } }
+  .shop-dash .panel { border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; background: var(--body-bg); }
+  .shop-dash .panel h2 { margin: 0 0 8px; padding: 0; font-size: 14px; background: none; color: var(--body-fg); text-transform: none; }
+  .shop-dash .panel h2 .more { float: left; font-size: 12px; font-weight: 400; }
+  .shop-dash .panel table { width: 100%; }
+  .shop-dash .muted { color: var(--body-quiet-color); }
+  .shop-dash .chart-box { position: relative; height: 260px; }
+</style>
+{% endcompress %}
+{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+{% if dashboard %}
+<div class="shop-dash" dir="rtl">
+
+  <div class="cards">
+    {% for c in dashboard.cards %}
+    <a class="card{% if c.warn %} warn{% endif %}" href="{{ c.url|default:'#' }}">
+      <div class="label">{{ c.label }}</div>
+      <div class="value">{{ c.value }}</div>
+      <div class="sub">{{ c.sub }}</div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="grid2 wide">
+    <div class="panel">
+      <h2>فروش ۳۰ روز اخیر</h2>
+      <div class="chart-box"><canvas id="sales-canvas"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>سفارش‌ها بر اساس وضعیت</h2>
+      <div class="chart-box"><canvas id="status-canvas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>منتظر ارسال <a class="more" href="{{ dashboard.to_ship_url }}">همه</a></h2>
+      <table>
+        <thead><tr><th>سفارش</th><th>مشتری</th><th>مبلغ</th><th>تاریخ</th></tr></thead>
+        <tbody>
+        {% for o in dashboard.to_ship %}
+          <tr>
+            <td><a href="{% url 'admin:orders_order_change' o.pk %}">#{{ o.pk }}</a></td>
+            <td>{{ o.first_name }} {{ o.last_name }}</td>
+            <td>{{ o.price|floatformat:"0g" }}</td>
+            <td>{{ o.created_date|date:"m-d H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="muted">سفارشی در انتظار ارسال نیست.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>تیکت‌های نیازمند پاسخ <a class="more" href="{{ dashboard.tickets_url }}">همه</a></h2>
+      <table>
+        <thead><tr><th>موضوع</th><th>کاربر</th><th>بخش</th><th>انتظار</th></tr></thead>
+        <tbody>
+        {% for t in dashboard.tickets %}
+          <tr>
+            <td><a href="{% url 'admin:tickets_ticket_change' t.pk %}">{{ t.subject }}</a></td>
+            <td>{{ t.profile.user }}</td>
+            <td>{{ t.get_department_display }}</td>
+            <td>{{ t.updated_date|timesince }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="muted">تیکت بازی نیست.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>موجودی کم یا تمام‌شده <a class="more" href="{{ dashboard.low_stock_url }}">همه</a></h2>
+      <table>
+        <thead><tr><th>محصول</th><th>موجودی</th></tr></thead>
+        <tbody>
+        {% for p in dashboard.low_stock %}
+          <tr>
+            <td><a href="{% url 'admin:products_catalog_change' p.pk %}">{{ p.title }}</a></td>
+            <td>{% if p.stock == 0 %}<b style="color: var(--error-fg)">تمام شده</b>{% else %}{{ p.stock }}{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2" class="muted">همه‌ی محصولات موجودی کافی دارند.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>پرفروش‌ترین‌ها (۳۰ روز اخیر)</h2>
+      <table>
+        <thead><tr><th>محصول</th><th>تعداد فروش</th></tr></thead>
+        <tbody>
+        {% for p in dashboard.top_products %}
+          <tr>
+            <td><a href="{% url 'admin:products_catalog_change' p.product_id %}">{{ p.product__title }}</a></td>
+            <td>{{ p.qty }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2" class="muted">هنوز فروشی ثبت نشده.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {{ dashboard.sales_chart|json_script:"sales-chart" }}
+  {{ dashboard.status_chart|json_script:"status-chart" }}
+  {% compress js %}
+  <script src="{% static 'vendors/chart/chart.umd.min.js' %}"></script>
+  {% endcompress %}
+  {% compress js inline %}
+  <script>
+  (function () {
+    if (typeof Chart === 'undefined') return;
+    var css = getComputedStyle(document.documentElement);
+    var fg = css.getPropertyValue('--body-quiet-color').trim() || '#666';
+    var grid = css.getPropertyValue('--hairline-color').trim() || '#ddd';
+    var sales = JSON.parse(document.getElementById('sales-chart').textContent);
+    var status = JSON.parse(document.getElementById('status-chart').textContent);
+    Chart.defaults.color = fg;
+
+    new Chart(document.getElementById('sales-canvas'), {
+      data: {
+        labels: sales.labels,
+        datasets: [
+          {type: 'bar', label: 'فروش (تومان)', data: sales.revenue,
+           backgroundColor: 'rgba(54,162,235,.55)', yAxisID: 'y'},
+          {type: 'line', label: 'تعداد سفارش', data: sales.orders,
+           borderColor: '#f39c12', backgroundColor: '#f39c12', tension: 0.3, yAxisID: 'y1'}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {beginAtZero: true, grid: {color: grid}},
+          y1: {beginAtZero: true, position: 'right', grid: {drawOnChartArea: false}, ticks: {precision: 0}},
+          x: {grid: {display: false}}
+        }
+      }
+    });
+
+    new Chart(document.getElementById('status-canvas'), {
+      type: 'doughnut',
+      data: {
+        labels: status.labels,
+        datasets: [{data: status.data,
+          backgroundColor: ['#f39c12', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6']}]
+      },
+      options: {responsive: true, maintainAspectRatio: false}
+    });
+  })();
+  </script>
+  {% endcompress %}
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

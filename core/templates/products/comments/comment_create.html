@@ -1,0 +1,175 @@
+{% load compress %}
+<!-- ================= COMMENTS ================= -->
+
+<div style="margin-top:60px;background:#fff;padding:25px;border-radius:12px;border:1px solid #e5e5e5;">
+
+    <h2 style="margin-top:0;">💬 نظرات کاربران</h2>
+<form action="{% url 'products:Comment_create' %}" method="post">
+    {% csrf_token %}
+    <div style="margin-bottom:20px;">
+        <textarea
+            name="body"
+            placeholder="نظر خود را بنویسید..."
+            style="width:100%;margin-top:10px;padding:12px;height:100px;border:1px solid #ccc;border-radius:6px;"></textarea>
+        <button type="submit"
+            style="margin-top:10px;background:#007bff;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;">
+            ارسال نظر
+        </button>
+    </div>
+    <div id="comments">
+        <ul>
+            {% for root_comment in product.comments.all %}
+            <li>
+                <input 
+                type="radio" name="parent"
+                value="{{root_comment.id}}">
+
+                <div id="comment-box-{{ root_comment.id }}">
+                    <p>{{ root_comment.body }}</p>
+                    <button type="button" class="btn btn-danger" onclick="deleteComment('{{ root_comment.id }}')">
+                        delete my comment
+                    </button>
+                </div>
+            </li>
+            {% if root_comment.replies.all %}
+            <ul>
+                {% for rep in root_comment.replies.all %}
+                <li>
+                    <input 
+                    type="radio" name="parent"
+                    value="{{rep.id}}">
+                    {{rep.body }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</form>
+
+</div>
+{% compress css inline %}
+<style>
+
+.comment{
+    margin-top:20px;
+    border-right:3px solid #ddd;
+    padding-right:15px;
+}
+
+.comment-card{
+    background:#fafafa;
+    border-radius:8px;
+    padding:15px;
+}
+
+.comment-header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    font-size:13px;
+}
+
+.comment-user{
+    font-weight:bold;
+    color:#007bff;
+}
+
+.comment-time{
+    color:#888;
+}
+
+.comment-actions{
+    margin-top:12px;
+}
+
+.comment-actions button{
+    margin-left:5px;
+    border:none;
+    padding:6px 12px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.like-btn{
+    background:#28a745;
+    color:white;
+}
+
+.reply-btn{
+    background:#555;
+    color:white;
+}
+
+.edit-btn{
+    background:#ffc107;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.replies{
+    margin-right:35px;
+    margin-top:15px;
+}
+
+.reply-form{
+    display:none;
+    margin-top:12px;
+}
+
+.reply-form input,
+.reply-form textarea{
+
+    width:100%;
+    padding:8px;
+    margin-top:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+
+}
+
+.reply-form textarea{
+    height:70px;
+}
+
+</style>
+{% endcompress %}
+{% compress js inline%}
+<script>
+function deleteComment(commentId) {
+    if (confirm('آیا از حذف این کامنت مطمئن هستید؟')) {
+        // ۱. گرفتن توکن امنیت جنگو از صفحه
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // ۲. ساختن آدرس حذف (دقیقاً مطابق urls.py شما)
+        const deleteUrl = `/comment/${commentId}/delete/`; 
+
+        // ۳. ارسال درخواست POST به جنگو
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest' // به جنگو می‌گوید این یک درخواست ایجکس است
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // ۴. حذف افکت‌دار کامنت از روی صفحه بدون رفرش
+                const commentElement = document.getElementById(`comment-box-${commentId}`);
+                if (commentElement) {
+                    commentElement.style.transition = 'all 0.5s ease';
+                    commentElement.style.opacity = '0';
+                    setTimeout(() => commentElement.remove(), 500);
+                }
+            } else {
+                alert('خطایی در حذف کامنت رخ داد یا شما دسترسی ندارید.');
+            }
+        });
+    }
+}
+</script>
+{% endcompress %}

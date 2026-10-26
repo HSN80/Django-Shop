@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load compress %}
+
+{% block extrastyle %}{{ block.super }}
+{% compress css inline %}
+<style>
+  .stateat .filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--darkened-bg); }
+  .stateat .filters label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--body-quiet-color); }
+  .stateat table { width: 100%; }
+  .stateat .muted { color: var(--body-quiet-color); }
+  .stateat .notice { padding: 8px 12px; margin-bottom: 12px; border: 1px solid #e67e22; border-radius: 8px; color: #e67e22; }
+</style>
+{% endcompress %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a> &rsaquo; وضعیت در تاریخ
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="stateat" dir="rtl">
+
+  <form method="get" class="filters">
+    <label>بخش
+      <select name="section">
+        {% for k, l in state_options %}<option value="{{ k }}"{% if k == section %} selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>تاریخ <input type="date" name="date" value="{{ day }}"></label>
+    <button type="submit">نمایش</button>
+  </form>
+
+  {% if before_logging %}
+  <div class="notice">ثبت تاریخچه از {{ first_record|date:"Y-m-d H:i" }} شروع شده؛ برای تاریخ‌های قبل از آن داده‌ای وجود ندارد.</div>
+  {% endif %}
+
+  <p>
+    {{ section_label }} در پایان روز {{ day }}: <b>{{ count }}</b> مورد
+    {% if summary %}· {{ summary }}{% endif %}
+  </p>
+
+  <table>
+    <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+    {% empty %}
+      <tr><td colspan="{{ headers|length }}" class="muted">موردی پیدا نشد.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

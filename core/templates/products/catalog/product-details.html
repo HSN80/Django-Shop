@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load compress %}
+
+{% block content %}
+<main class="main">
+    <!-- Page Title -->
+    <div class="page-title light-background">
+        <div class="container d-lg-flex justify-content-between align-items-center">
+            <h1 class="mb-2 mb-lg-0">Product Details</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a>Home</a></li>
+                    <li class="current">Product Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div><!-- End Page Title -->
+
+    <!-- Product Details Section -->
+    <section class="product-details section" id="product-details">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Product Gallery -->
+                <div class="col-lg-7">
+                    <div class="image-showcase">
+                        <div class="main-image-container">
+                            {% if product.discount_campaign %}
+                            <span class="discount-badge">{{product.discount_campaign.percent}}%</span>
+                            {% endif %}
+                            <img alt="Product" class="img-fluid" data-zoom="{{product.images.first.image.url}}"
+                                id="main-product-image" src="{{product.images.first.image.url}}" />
+                            <div class="image-zoom-container"></div>
+                            <button class="image-nav-btn prev-image" type="button"><i
+                                    class="bi bi-chevron-left"></i></button>
+                            <button class="image-nav-btn next-image" type="button"><i
+                                    class="bi bi-chevron-right"></i></button>
+                        </div>
+                        <div class="thumb-strip">
+                            {% for image in product.images.all %}
+                            <div class="thumb-cell thumbnail-item {% if forloop.first %}active{% endif %}"
+                                data-image="{{image.image.url}}">
+                                <img alt="View {{forloop.counter}}" class="img-fluid" src="{{image.image.url}}" />
+                            </div>
+                            {% endfor %}
+                        </div><!-- End Thumb Strip -->
+                    </div><!-- End Image Showcase -->
+                </div><!-- End Product Gallery -->
+
+                <!-- Product Details -->
+                <div class="col-lg-5">
+                    <div class="product-detail-card">
+                        <div class="detail-header">
+                            <span class="type-badge">{{product.category}}</span>
+                            <span class="stock-indicator"><i class="bi bi-circle-fill"></i> In Stock</span>
+                        </div>
+                        <h1 class="product-heading">{{product.title}}</h1>
+                        {% if product.stock <= 10 %} <div class="review-summary">
+                            <span class="units-left">{{product.stock}} remaining</span>
+                    </div>
+                    {% endif %}
+                    {% if product.discount %}
+                    <div class="pricing-area">
+                        <div class="price-row">
+                            <span class="price-now">
+                                <img src="{% static 'assets/img/toman.svg' %}" alt="toman"></img>
+                                {{product.discount | intcomma }}
+                            </span>
+                            <span class="price-was">
+                                <img src="{% static 'assets/img/toman.svg' %}" alt="toman"></img>
+                                {{product.price | intcomma }}
+                            </span>
+                            <span
+                                class="badge bg-danger-subtle text-danger-emphasis rounded-phill px-4 py-2 fw-bold mb-3">
+                                {{product.discount_campaign.title}}
+                            </span>
+                        </div>
+                        <span class="save-tag">Save {{ save_price | intcomma }}</span>
+                    </div>
+                    {% else %}
+                    <div class="pricing-area">
+                        <div class="price-row">
+                            <span class="price-now">
+                                <img src="{% static 'assets/img/toman.svg' %}" alt="toman"></img>
+                                {{product.price | intcomma}}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <p class="summary-text">{{product.snippet}}...</p>
+                    <div class="separator"></div>
+                    <div class="action-row">
+                        <form action="{% url 'carts:Cart_item_create' %}" method="POST" style="display: contents;">
+                            <div class="quantity-selector">
+                                {% csrf_token %}
+                                <button class="quantity-btn decrease" type="button"><i class="bi bi-dash"></i></button>
+                                <input name="quantity" class="quantity-input" max="{{product.stock}}" min="1"
+                                    type="number" value="1" />
+                                <input type="hidden" name="product" value="{{ product.id }}">
+                                <button class="quantity-btn increase" type="button"><i class="bi bi-plus"></i></button>
+                            </div>
+                            <button class="btn primary-action-btn" type="submit">
+                                <i class="bi bi-bag-plus"></i> Add to Cart
+                            </button>
+                        </form>
+                        <form action="{% url 'userfav:Userfav_create' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{product.id}}">
+                            <button class="btn wishlist-toggle" title="Save to Wishlist" type="submit">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="guarantee-bar">
+                        <div class="guarantee-item">
+                            <i class="bi bi-truck"></i>
+                            <span>Free shipping $75+</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <span>45-day returns</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span>3-year warranty</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <i class="bi bi-headset"></i>
+                            <span>24/7 support</span>
+                        </div>
+                    </div><!-- End Guarantee Bar -->
+                </div>
+            </div><!-- End Product Details -->
+        </div><!-- End row g-4 -->
+
+        <!-- Tabbed Content -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="info-tabs">
+                    <ul class="tab-nav nav" role="tablist">
+                        <li><button aria-selected="true" class="nav-link active"
+                                data-bs-target="#product-details-tab-desc" data-bs-toggle="tab" role="tab"
+                                type="button">Description</button></li>
+                        <li><button aria-selected="false" class="nav-link" data-bs-target="#product-details-tab-specs"
+                                data-bs-toggle="tab" role="tab" tabindex="-1" type="button">Specifications</button></li>
+                        <li><button aria-selected="false" class="nav-link"
+                                data-bs-target="#product-details-tab-feedback" data-bs-toggle="tab" role="tab"
+                                tabindex="-1" type="button">Feedback ({{product.comments.count}})</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- Description Tab -->
+                        <div class="tab-pane fade show active" id="product-details-tab-desc" role="tabpanel">
+                            <div class="desc-content">
+                                <div class="row g-4">
+                                    <div class="col-lg-8">
+                                        <h3>About This Product</h3>
+                                        <p>{{product.description}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- End Description Tab -->
+                        <!-- Specifications Tab -->
+                        <div class="tab-pane fade" id="product-details-tab-specs" role="tabpanel">
+                            <div class="specs-content">
+                                <div class="row g-4">
+                                    {% if product.specs %}
+                                    {% for primary_key, details in product.specs.items %}
+                                    <div class="col-md-6">
+                                        <div class="spec-block">
+                                            <h4>{{primary_key}}</h4>
+                                            <table class="data-table">
+                                                <tbody>
+                                                    {% for key, value in details.items %}
+                                                    <tr>
+                                                        <td>{{ key }}</td>
+                                                        <td>{{ value }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <div class="col-12">
+                                        <p>this product has no specs</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div><!-- End Specifications Tab -->
+                        <!-- Feedback Tab -->
+                        <div class="tab-pane fade" id="product-details-tab-feedback" role="tabpanel">
+                            <div class="feedback-content">
+                                <div class="row g-4 mb-4">
+                                    <form action="{% url 'products:Comment_create' %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="col-lg-3 col-md-4">
+                                            <div class="rating-overview">
+                                                <button class="btn review-cta" type="submit">Write a comment</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-9 col-md-8">
+                                            <div class="distribution-chart">
+                                                <textarea class="form-control" name="body" placeholder="comment"></textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div><!-- End Rating Overview -->
+                                <div class="reviews-list">
+                                    {% for item in product.comments.all %}
+                                    <article class="review-entry">
+                                        <div class="entry-top">
+                                            <img alt="Reviewer" class="avatar-img" src="{{ item.user.image.url }}" />
+                                            <div class="entry-meta">
+                                                <strong>{{ item.user.first_name }}</strong>
+                                                <span class="entry-date">{{ item.created_date }}</span>
+                                            </div>
+                                        </div>
+                                        <p>{{ item.body }}</p>
+
+                                        {% for reply in item.replies.all %}
+                                        <div class="review-entry reply-entry">
+                                            <div class="entry-top">
+                                                <img alt="Reviewer" class="avatar-img"
+                                                    src="{{ reply.user.image.url }}" />
+                                                <div class="entry-meta">
+                                                    <strong>{{ reply.user.first_name }}</strong>
+                                                    <span class="entry-date">{{ reply.created_date }}</span>
+                                                </div>
+                                            </div>
+                                            <p>{{ reply.body }}</p>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </article>
+                                    {% endfor %}
+                                </div><!-- End Reviews List -->
+                            </div>
+                        </div><!-- End Feedback Tab -->
+                    </div>
+                </div>
+            </div>
+        </div><!-- End Tabbed Content row -->
+        </div><!-- End Container -->
+    </section><!-- /Product Details Section -->
+    {% compress js%}
+    <script src="{% static 'assets/js/reply-toggle.js' %}"></script>
+    {% endcompress %}
+</main>
+{% endblock %}

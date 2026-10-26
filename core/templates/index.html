@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load compress %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero section light-background" id="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <div class="intro-content">
+          <span class="badge-label">Curated Selection</span>
+          <h1 class="headline">Discover What Defines Modern Living</h1>
+          <p class="subtext">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
+            Donec velit neque, auctor sit amet aliquam vel.</p>
+          <div class="action-group">
+            <a class="btn-primary-action" href="{% url 'products:Category_list' %}">Browse Items</a>
+            <a class="btn-ghost-action" href="{% url 'products:Category_list' %}"><i
+                class="bi bi-arrow-right me-2"></i>See All Categories</a>
+          </div>
+          <div class="trust-indicators">
+            <div class="indicator">
+              <i class="bi bi-truck"></i>
+              <span>Free Shipping</span>
+            </div>
+            <div class="indicator">
+              <i class="bi bi-shield-check"></i>
+              <span>Verified Quality</span>
+            </div>
+            <div class="indicator">
+              <i class="bi bi-arrow-return-left"></i>
+              <span>Easy Returns</span>
+            </div>
+            <div class="indicator">
+              <i class="bi bi-chat-dots"></i>
+              <span>24/7 Support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="row g-4">
+          {% for product in products %}
+          {% if product.discount_campaign|slice:":4" %}
+          <div class="col-md-6">
+            <div class="product-tile">
+              <div class="tile-image">
+                <img alt="Product" class="img-fluid" src="{{product.images.first.image.url}}" />
+                <span class="tile-badge accent">Most Discount</span>
+              </div>
+
+              <div class="tile-info">
+                <h4>
+                  <a href="{{ product.get_absolute_url }}">
+
+                    {{product.title}}
+                  </a>
+                </h4>
+                <div class="tile-price">
+                  <span class="current">{{product.discount|intcomma }} <img src="{% static 'assets/img/toman.svg' %}"
+                      alt="toman"></span>
+                  <span class="original">{{product.price|intcomma }} <img src="{% static 'assets/img/toman.svg' %}"
+                      alt="toman"></span>
+                </div>
+              </div>
+            </div><!-- End Product Tile -->
+          </div>
+          {% endif %}
+          {% endfor %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="slider-section container">
+    <div class="section-heading">
+      <h2>Popular Products</h2>
+      <p>Explore our featured selection</p>
+    </div>
+
+    <div class="product-carousel swiper init-swiper">
+
+      <script class="swiper-config" type="application/json">
+      {
+        "loop": true,
+        "speed": 500,
+        "autoplay": {
+          "delay": 4000,
+          "disableOnInteraction": true
+        },
+        "slidesPerView": 1,
+        "spaceBetween": 16,
+        "breakpoints": {
+          "576": {
+            "slidesPerView": 2,
+            "spaceBetween": 16
+          },
+          "768": {
+            "slidesPerView": 3,
+            "spaceBetween": 16
+          },
+          "1200": {
+            "slidesPerView": 4,
+            "spaceBetween": 24
+          }
+        },
+        "pagination": {
+          "el": ".swiper-pagination",
+          "type": "bullets",
+          "clickable": true
+        },
+        "navigation": {
+          "nextEl": ".swiper-button-next",
+          "prevEl": ".swiper-button-prev"
+        }
+      }
+    </script>
+      <div class="swiper-wrapper">
+        {% for product in products %}
+        <div class="swiper-slide">
+          <div class="slide-card">
+
+            <div class="slide-card-image">
+              {% if product.images.first %}
+              <img src="{{ product.images.first.image.url }}" alt="{{ product.title }}" class="img-fluid"
+                loading="lazy" />
+              {% endif %}
+              <span class="slide-badge accent">Popular</span>
+            </div>
+            <div class="slide-card-body">
+              <h4>
+                <a href="{{ product.get_absolute_url }}">
+                  {{ product.title }}
+                </a>
+              </h4>
+
+              <p>{{ product.snippet }}</p>
+
+              <div class="slide-card-price">
+                {% if product.discount %}
+                <span class="price-now">
+                  {{ product.discount|intcomma }}
+                  <img src="{% static 'assets/img/toman.svg' %}" alt="Toman" />
+                </span>
+
+                <span class="price-was">
+                  {{ product.price|intcomma }}
+                  <img src="{% static 'assets/img/toman.svg' %}" alt="Toman" />
+                </span>
+                {% else %}
+                <span class="price-now">
+                  {{ product.price|intcomma }}
+                  <img src="{% static 'assets/img/toman.svg' %}" alt="Toman" />
+                </span>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="swiper-pagination"></div>
+
+      <div class="swiper-button-prev" aria-label="Previous slide"></div>
+
+      <div class="swiper-button-next" aria-label="Next slide"></div>
+
+    </div>
+  </div>
+
+  </div>
+</section><!-- /Hero Section -->
+</main>
+{% endblock %}

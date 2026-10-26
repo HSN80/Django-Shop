@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <!-- Clip path to ensure the shadow only appears on the right side -->
+    <clipPath id="right-shadow">
+      <rect x="55" y="0" width="45" height="100" />
+    </clipPath>
+    
+    <!-- Base bookmark path used for both the shadow and the foreground -->
+    <path id="bookmark" d="
+      M 27 23
+      A 8 8 0 0 1 35 15
+      L 65 15
+      A 8 8 0 0 1 73 23
+      L 73 82
+      A 4 4 0 0 1 69 86
+      L 50 68
+      L 31 86
+      A 4 4 0 0 1 27 82
+      Z" />
+  </defs>
+
+  <!-- 3D Drop Shadow (Offset right) -->
+  <use href="#bookmark" x="8" y="0" fill="black" stroke="black" stroke-width="6" stroke-linejoin="round" clip-path="url(#right-shadow)" />
+
+  <!-- Main Bookmark Shape -->
+  <use href="#bookmark" x="0" y="0" fill="white" stroke="black" stroke-width="6" stroke-linejoin="round" />
+
+  <!-- Diagonal 'Crossed Out' Line Background (creates the black outline) -->
+  <line x1="12" y1="88" x2="88" y2="12" stroke="black" stroke-width="14" stroke-linecap="round" />
+  
+  <!-- Diagonal 'Crossed Out' Line Foreground (white interior) -->
+  <line x1="12" y1="88" x2="88" y2="12" stroke="white" stroke-width="8" stroke-linecap="round" />
+</svg>

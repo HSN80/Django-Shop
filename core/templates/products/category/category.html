@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">{% if selected_category %}{{ selected_category.title }}{% else %}Categorie{% endif %}</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="">Home</a></li>
+          <li class="current">{% if selected_category %}{{ selected_category.title }}{% else %}categories{% endif %}
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div><!-- End Page Title -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 sidebar">
+        <div class="widgets-container">
+          <!-- Product Categories Widget -->
+          <div class="product-categories-widget widget-item">
+            <h3 class="widget-title">Categories</h3>
+            <ul class="category-tree list-unstyled mb-0">
+              {% for item in categories %}
+              {% include 'products/category/_category_node.html' with item=item %}
+              {% endfor %}
+            </ul>
+          </div><!--/Product Categories Widget -->
+          <!-- Pricing Range Widget -->
+          <div class="pricing-range-widget widget-item">
+            <h3 class="widget-title">Price Range</h3>
+            <div class="price-range-container">
+              <div class="current-range mb-3">
+                <span class="">{{ price_bounds.min_price|intcomma }}<img src="{% static 'assets/img/toman.svg' %}" alt="toman" ></span>
+                <span class="max-price float-end">{{ price_bounds.max_price|intcomma }}<img src="{% static 'assets/img/toman.svg' %}" alt="toman" ></span>
+              </div>
+              <div class="range-slider">
+                <div class="slider-track"></div>
+                <div class="slider-progress"></div>
+                <input class="min-range" min="{{ price_bounds.absolute_min }}" max="{{ price_bounds.absolute_max }}"
+                  step="1000" type="range" value="{{ price_bounds.min_price }}" />
+                <input class="max-range" min="{{ price_bounds.absolute_min }}" max="{{ price_bounds.absolute_max }}"
+                  step="1000" type="range" value="{{ price_bounds.max_price }}" />
+              </div>
+              <div class="price-inputs mt-3">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="input-group input-group-sm">
+                      <input class="form-control min-price-input" min="{{ price_bounds.absolute_min }}"
+                        max="{{ price_bounds.absolute_max }}" placeholder="Min" step="1000" type="number"
+                        value="{{ price_bounds.min_price }}" />
+                      <span class="input-group-text"><img src="{% static 'assets/img/toman.svg' %}" alt="toman"></span>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="input-group input-group-sm">
+                      <input class="form-control max-price-input" min="{{ price_bounds.absolute_min }}"
+                        max="{{ price_bounds.absolute_max }}" placeholder="Max" step="1000" type="number"
+                        value="{{ price_bounds.max_price }}" />
+                      <span class="input-group-text"><img src="{% static 'assets/img/toman.svg' %}" alt="toman"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="filter-actions mt-3">
+                <button class="btn btn-sm btn-primary w-100" type="button" id="applyPriceFilter">Apply Filter</button>
+              </div>
+            </div>
+          </div><!--/Pricing Range Widget -->
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <!-- Category Header Section -->
+        <section class="category-header section" id="category-header">
+          <div class="container">
+            <!-- Search & Controls Card -->
+            <div class="controls-card">
+              <div class="controls-header">
+              </div><!-- End Controls Header -->
+              <div class="controls-divider"></div>
+              <div class="controls-filters">
+                <div class="row align-items-end g-3">
+                  <div class="col-lg-3 col-md-6">
+                    <div class="filter-field">
+                      <form method="get">
+                        <input type="hidden" name="per_page" value="{{ per_page }}" />
+                        <label for="sortBy">Sort By</label>
+                        <select class="form-select" id="sortBy" name="ordering_by" onchange="this.form.submit()">
+                          <option value="" {% if not ordering_by %}selected{% endif %}>Selecet Price Filter</option>
+                          <option value="low_to_high" {% if ordering_by == 'low_to_high' %}selected{% endif %}>Price: Low to High</option>
+                          <option value="high_to_low" {% if ordering_by == 'high_to_low' %}selected{% endif %}>Price: High to Low</option>
+                          <option value="newest" {% if ordering_by == 'newest' %}selected{% endif %}>Newest Arrivals</option>
+                        </select>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    <form method="get" class="filter-field">
+                      <input type="hidden" name="ordering_by" value="{{ ordering_by }}" />
+                      <label for="itemsPerPage">Items Per Page</label>
+                      <select aria-label="Items per page" class="form-select" id="itemsPerPage" name="per_page"
+                        onchange="this.form.submit()">
+                        <option value="12" {% if per_page == 12 %}selected{% endif %}>12 items</option>
+                        <option value="24" {% if per_page == 24 %}selected{% endif %}>24 items</option>
+                        <option value="48" {% if per_page == 48 %}selected{% endif %}>48 items</option>
+                        <option value="96" {% if per_page == 96 %}selected{% endif %}>96 items</option>
+                      </select>
+                    </form>
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    <a href="?" class="clear-filters-btn" type="button">
+                      <i class="bi bi-arrow-counterclockwise"></i> Clear Filters
+                    </a>
+                  </div>
+                </div>
+              </div><!-- End Controls Filters -->
+            </div><!-- End Controls Card -->
+            <!-- Active Filters -->
+            {% if active_filters %}
+            <div class="active-tags">
+              <span class="tags-label">Active filters:</span>
+              <div class="tags-list">
+                {% for f in active_filters %}
+                <span class="tag-item">
+                  {{ f.label }}
+                  <a href="{{ f.remove_url }}" aria-label="Remove filter" class="tag-remove"><i class="bi bi-x"></i></a>
+                </span>
+                {% endfor %}
+              </div>
+              <a href="?" class="reset-all">Reset All</a>
+
+            </div>
+            {% endif %}
+            <!-- End Active Filters -->
+          </div>
+        </section><!-- /Category Header Section -->
+        <!-- Category Product List Section -->
+        <section class="category-product-list section" id="category-product-list">
+          <div class="container">
+            <div class="row g-3 g-lg-4">
+              {% for product in products %}
+              <div class="col-md-6 col-lg-5">
+                <article class="product-tile">
+                  <div class="tile-visual">
+                    <a href="{{ product.get_absolute_url }}">
+                      {% if product.images.first %}
+                      <img alt="{{ product.title }}" class="img-fluid" loading="lazy"
+                        src="{{ product.images.first.image.url }}" />
+                      {% else %}
+                      <img alt="{{ product.title }}" class="img-fluid" loading="lazy"
+                        src="{% static 'img/product/placeholder.webp' %}" />
+                      {% endif %}
+                    </a>
+                    {% if product.discount %}
+                    <span class="status-tag tag-discount">{{ product.discount_campaign.percent }}%</span>
+                    {% endif %}
+                  </div>
+                  <div class="tile-body">
+                    <h4 class="tile-title"><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h4>
+                  </div>
+                  <div class="tile-footer">
+                    {% if product.discount %}
+                    <span class="tile-price">{{ product.discount|intcomma }} <img
+                        src="{% static 'assets/img/toman.svg' %}" alt="toman"></span>
+                    {% else %}
+                    <span class="tile-price">{{ product.price|intcomma }} <img src="{% static 'assets/img/toman.svg' %}"
+                        alt="toman"></span>
+                    {% endif %}
+                  </div>
+                </article>
+              </div><!-- End Product Item -->
+              {% empty %}
+              <div class="col-12">
+                <div class="empty-state text-center py-5">
+                  {% if selected_category %}
+                  <p class="mb-0">محصولی توی دسته‌ی «{{ selected_category.title }}» موجود نیست.</p>
+                  {% else %}
+                  <p class="mb-0">یه دسته‌بندی رو از سایدبار انتخاب کن تا محصولاتش نشون داده بشه.</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section><!-- /Category Product List Section -->
+        <!-- Category Pagination Section -->
+        {% if is_paginated %}
+        <section class="category-pagination section" id="category-pagination">
+          <div class="container">
+            <div class="pagination-bar">
+              <div class="row align-items-center gy-3">
+                <div class="col-lg-4 col-md-4">
+                  <div class="results-label">
+                    صفحه‌ی <span class="current-page">{{ page_obj.number }}</span> از
+                    <span class="total-pages">{{ paginator.num_pages }}</span> ·
+                    نمایش {{ page_obj.start_index }} تا {{ page_obj.end_index }} از {{ paginator.count }} محصول
+                  </div>
+                </div><!-- End Results Label -->
+                <div class="col-lg-4 col-md-4">
+                  <nav aria-label="Page navigation">
+                    <ul class="page-list">
+                      <li>
+                        {% if page_obj.has_previous %}
+                        <a aria-label="Previous page" class="page-control prev-control"
+                          href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}">
+                          <i class="bi bi-arrow-left"></i>
+                        </a>
+                        {% else %}
+                        <span class="page-control prev-control disabled">
+                          <i class="bi bi-arrow-left"></i>
+                        </span>
+                        {% endif %}
+                      </li>
+                      {% for num in elided_page_range %}
+                      {% if num == page_ellipsis %}
+                      <li><span class="page-ellipsis">…</span></li>
+                      {% else %}
+                      <li>
+                        <a aria-current="{% if num == page_obj.number %}page{% endif %}" class="page-link-item{% if num == page_obj.number %} active{% endif %}" href="?page={{ num }}&per_page={{ per_page }}">{{ num }}</a>
+                      </li>
+                      {% endif %}
+                      {% endfor %}
+                      <li>
+                        {% if page_obj.has_next %}
+                        <a aria-label="Next page" class="page-control next-control"
+                          href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}">
+                          <i class="bi bi-arrow-right"></i>
+                        </a>
+                        {% else %}
+                        <span class="page-control next-control disabled">
+                          <i class="bi bi-arrow-right"></i>
+                        </span>
+                        {% endif %}
+                      </li>
+                    </ul>
+                  </nav>
+                </div><!-- End Page Numbers -->
+                <div class="col-lg-4 col-md-4">
+                  <form method="get" class="goto-group">
+                    <label for="goto-input">برو به</label>
+                    <input type="hidden" name="per_page" value="{{ per_page }}" />
+                    <input aria-label="Jump to page number" id="goto-input" name="page" max="{{ paginator.num_pages }}"
+                      min="1" type="number" value="{{ page_obj.number }}" />
+                    <button class="goto-btn" type="submit">برو</button>
+                  </form>
+                </div><!-- End Go To Page -->
+              </div>
+            </div>
+          </div>
+        </section>
+        {% endif %}<!-- /Category Pagination Section -->
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'assets/js/price-widget.js' %}"></script>
+</main>
+
+{% endblock %}

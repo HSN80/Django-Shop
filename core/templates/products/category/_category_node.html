@@ -1,0 +1,24 @@
+<li class="category-item">
+  {% if item.children.all %}
+    <div aria-controls="categories-{{ item.id }}-subcategories" aria-expanded="false"
+      class="d-flex justify-content-between align-items-center category-header collapsed"
+      data-bs-target="#categories-{{ item.id }}-subcategories" data-bs-toggle="collapse">
+      <a class="category-link{% if selected_category.id == item.id %} active{% endif %}"
+        href="{% url 'products:Category_list' category_path=item.slug %}">{{ item.title }}</a>
+      <span class="category-toggle">
+        <i class="bi bi-chevron-down"></i>
+        <i class="bi bi-chevron-up"></i>
+      </span>
+    </div>
+    <ul class="subcategory-list list-unstyled collapse ps-3 mt-2" id="categories-{{ item.id }}-subcategories">
+      {% for child in item.children.all %}
+        {% include 'products/category/_category_node.html' with item=child %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="d-flex justify-content-between align-items-center category-header">
+      <a class="category-link{% if selected_category.id == item.id %} active{% endif %}"
+        href="{% url 'products:Category_list' category_path=item.slug %}">{{ item.title }}</a>
+    </div>
+  {% endif %}
+</li>
