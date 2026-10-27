@@ -120,7 +120,7 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=24)
     address = models.TextField()
     postal_code = models.CharField(max_length=12)
-    image = models.ImageField(upload_to="image/",default="image/default.jpg",validators=[image_validator,],null=True,blank=True)
+    image = models.ImageField(upload_to="image/",default="image/default.svg",validators=[image_validator,],null=True,blank=True)
     description = models.TextField()
 
     created_date = models.DateTimeField(auto_now_add=True)
