@@ -4,9 +4,9 @@
 
 [English](README.md) · [فارسی](README.fa.md)
 
-![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/django-5.2-0c4b33?logo=django&logoColor=white)
-[![CI](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml/badge.svg)](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml)
 ![License](https://img.shields.io/github/license/HSN80/Django-Shop)
 ![Bootstrap](https://img.shields.io/badge/bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 
