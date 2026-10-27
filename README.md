@@ -9,7 +9,6 @@
 [![CI](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
 ![License](https://img.shields.io/github/license/HSN80/Django-Shop)
 ![Bootstrap](https://img.shields.io/badge/bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![Storefront](docs/images/storefront.gif)
 
