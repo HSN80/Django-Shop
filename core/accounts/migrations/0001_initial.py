@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("username", models.CharField(max_length=24, unique=True)),
-                ("email", models.EmailField(max_length=64)),
+                ("email", models.EmailField(max_length=64, unique=True)),
                 ("is_staff", models.BooleanField(default=False)),
                 ("is_active", models.BooleanField(default=True)),
                 ("is_verified", models.BooleanField(default=False)),

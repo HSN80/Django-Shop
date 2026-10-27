@@ -5,7 +5,8 @@ pillow
 django-phonenumber-field[phonenumbers]
 django-debug-toolbar
 imageio_ffmpeg
-python-magic-bin
+python-magic; sys_platform != "win32"
+python-magic-bin; sys_platform == "win32"
 django-simple-history
 django_compressor
 django-robots

@@ -6,11 +6,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/django-5.2-0c4b33?logo=django&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/postgresql-ready-336791?logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
+[![CI](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+![License](https://img.shields.io/github/license/HSN80/Django-Shop)
 ![Bootstrap](https://img.shields.io/badge/bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![Storefront](docs/images/storefront.gif)
 
@@ -114,6 +112,7 @@
 ## راه‌اندازی سریع
 
 ### با Docker
+</div>
 
 <div dir="ltr">
 
@@ -144,8 +143,9 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-</div>
+</div dir="rtl">
 
+<div>
 برای فروشگاه <http://127.0.0.1:8000/> و برای پنل مدیریت <http://127.0.0.1:8000/admin/> را باز کنید.
 
 > بدون Docker، `python-magic` به کتابخانه‌ی سیستمی `libmagic` نیاز دارد (روی ویندوز `python-magic-bin` را نصب کنید).
@@ -163,8 +163,9 @@ python manage.py runserver
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | حساب SMTP و نشانی فرستنده |
 
 ## تست‌شده
+> یکپارچه‌سازی پیوسته
 
-![اجرای موفق مجموعه‌ی تست](docs/images/tests.gif)
+هر درخواست push و pull کل مجموعه را روی GitHub Actions (`.github/workflows/ci.yml`) اجرا می‌کند و بررسی می‌کند که آیا تصویر Docker ساخته شده است یا خیر. نشان موجود در README آخرین نتیجه را نشان می‌دهد.
 
 خودتان اجرا کنید: `python manage.py test`
 

@@ -6,10 +6,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/django-5.2-0c4b33?logo=django&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/postgresql-ready-336791?logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
+[![CI](https://github.com/HSN80/Django-Shop/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+![License](https://img.shields.io/github/license/HSN80/Django-Shop)
 ![Bootstrap](https://img.shields.io/badge/bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![Storefront](docs/images/storefront.gif)
@@ -153,7 +152,9 @@ Open <http://127.0.0.1:8000/> for the shop and <http://127.0.0.1:8000/admin/> fo
 
 ## Tested
 
-![Test suite passing](docs/images/tests.gif)
+> Continuous integration
+
+Every push and pull request runs the whole suite on GitHub Actions (`.github/workflows/ci.yml`) and checks that the Docker image builds. The badge in the README shows the latest result.
 
 Run it yourself: `python manage.py test`
 
